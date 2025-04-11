@@ -1,3 +1,48 @@
+
+def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
+    # === Upload to ImgBB ===
+    imgbb_api_key = st.secrets["IMGBB_API_KEY"]
+    imgbb_url = "https://api.imgbb.com/1/upload"
+    b64_image = base64.b64encode(image_bytes).decode("utf-8")
+
+    data = {
+        "key": imgbb_api_key,
+        "image": b64_image,
+        "name": title_slug
+    }
+
+    response = requests.post(imgbb_url, data=data)
+    response.raise_for_status()
+    image_url = response.json()["data"]["url"]
+
+    # === Create Shopify Product ===
+    shopify_url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
+    headers = {
+        "X-Shopify-Access-Token": SHOPIFY_TOKEN,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "product": {
+            "title": title_full,
+            "handle": title_slug,
+            "body_html": DESCRIPTION,
+            "vendor": "NOFO VIBES",
+            "product_type": "Baby Bodysuit",
+            "tags": "baby,funny,onesie,cute,custom",
+            "images": [{"src": image_url}]
+        }
+    }
+
+    r = requests.post(shopify_url, json=payload, headers=headers)
+    r.raise_for_status()
+    product = r.json()["product"]
+
+    if not product.get("images"):
+        raise Exception("Image upload failed — Shopify didn't return an image.")
+
+    return product["images"][0]["src"]
+
+
 import streamlit as st
 import os
 import csv
@@ -32,58 +77,6 @@ BULLETS = [
 ]
 DESCRIPTION = "<p>Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!</p>"
 
-def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
-    import hashlib, hmac, time
-
-    cloud_name = st.secrets["CLOUDINARY_CLOUD_NAME"]
-    api_key = st.secrets["CLOUDINARY_API_KEY"]
-    api_secret = st.secrets["CLOUDINARY_API_SECRET"]
-
-    timestamp = str(int(time.time()))
-    payload_to_sign = f"timestamp={timestamp}{api_secret}"
-    signature = hmac.new(
-        api_secret.encode("utf-8"),
-        msg=payload_to_sign.encode("utf-8"),
-        digestmod=hashlib.sha1
-    ).hexdigest()
-
-    upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
-    files = {"file": image_bytes}
-    data = {
-        "api_key": api_key,
-        "timestamp": timestamp,
-        "signature": signature
-    }
-
-    upload_response = requests.post(upload_url, files=files, data=data)
-    upload_response.raise_for_status()
-    image_url = upload_response.json()["secure_url"]
-
-    # Then create Shopify product using that image URL
-    url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
-    headers = {
-        "X-Shopify-Access-Token": SHOPIFY_TOKEN,
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "product": {
-            "title": title_full,
-            "handle": title_slug,
-            "body_html": DESCRIPTION,
-            "vendor": "NOFO VIBES",
-            "product_type": "Baby Bodysuit",
-            "tags": "baby,funny,onesie,cute,custom",
-            "images": [{"src": image_url}]
-        }
-    }
-    r = requests.post(url, json=payload, headers=headers)
-    r.raise_for_status()
-    product = r.json()["product"]
-
-    if not product.get("images"):
-        raise Exception("Image upload failed — Shopify didn't return an image.")
-
-    return product["images"][0]["src"]
 
 
 
@@ -184,44 +177,5 @@ if uploaded_file:
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
-import time, hmac, hashlib
-import streamlit as st
-import requests
-
-cloud_name = st.secrets["CLOUDINARY_CLOUD_NAME"]
-api_key = st.secrets["CLOUDINARY_API_KEY"]
-api_secret = st.secrets["CLOUDINARY_API_SECRET"]
-
-uploaded_file = st.file_uploader("Upload PNG to Test Cloudinary", type="png")
-
-if uploaded_file:
-    image_bytes = uploaded_file.read()
-    timestamp = str(int(time.time()))
-
-    string_to_sign = f"timestamp={timestamp}"
-    signature = hmac.new(
-        api_secret.encode("utf-8"),
-        msg=string_to_sign.encode("utf-8"),
-        digestmod=hashlib.sha1
-    ).hexdigest()
-
-    upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
-    files = {"file": image_bytes}
-    data = {
-        "api_key": api_key,
-        "timestamp": timestamp,
-        "signature": signature
-    }
-
-    st.write("Uploading to Cloudinary...")
-    response = requests.post(upload_url, files=files, data=data)
-    st.write("Status Code:", response.status_code)
-
-    if response.ok:
-        image_url = response.json()["secure_url"]
-        st.success("✅ Upload succeeded!")
-        st.image(image_url)
-        st.write(image_url)
-    else:
         st.error(f"❌ Upload failed: {response.text}")
 
