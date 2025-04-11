@@ -145,7 +145,7 @@ uploaded_file = st.file_uploader("Upload PNG File", type="png")
 if uploaded_file:
     image = Image.open(uploaded_file)
     title = os.path.splitext(uploaded_file.name)[0].replace("-", " ").replace("_", " ").title()
-    st.image(image, caption=title, use_column_width=True)
+    st.image(image, caption=title, use_container_width=True)
 
     if st.button("📤 Upload & Submit Feed"):
         try:
