@@ -1,4 +1,3 @@
-
 def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     # === Upload to ImgBB ===
     imgbb_api_key = st.secrets["IMGBB_API_KEY"]
@@ -6,12 +5,12 @@ def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
     data = {
-    "key": (None, imgbb_api_key),
-    "image": (None, b64_image),
-    "name": (None, title_slug)
-}
+        "key": (None, imgbb_api_key),
+        "image": (None, b64_image),
+        "name": (None, title_slug)
+    }
 
-response = requests.post(imgbb_url, files=data)
+    response = requests.post(imgbb_url, files=data)
     response.raise_for_status()
     image_url = response.json()["data"]["url"]
 
@@ -41,7 +40,6 @@ response = requests.post(imgbb_url, files=data)
         raise Exception("Image upload failed — Shopify didn't return an image.")
 
     return product["images"][0]["src"]
-
 
 import streamlit as st
 import os
@@ -181,4 +179,3 @@ if uploaded_file:
             st.error(f"❌ Error: {e}")
 
         st.error(f"❌ Upload failed: {response.text}")
-
