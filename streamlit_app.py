@@ -184,8 +184,8 @@ if uploaded_file:
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
-import streamlit as st
 import time, hmac, hashlib
+import streamlit as st
 import requests
 
 cloud_name = st.secrets["CLOUDINARY_CLOUD_NAME"]
@@ -197,6 +197,7 @@ uploaded_file = st.file_uploader("Upload PNG to Test Cloudinary", type="png")
 if uploaded_file:
     image_bytes = uploaded_file.read()
     timestamp = str(int(time.time()))
+
     string_to_sign = f"timestamp={timestamp}"
     signature = hmac.new(
         api_secret.encode("utf-8"),
@@ -212,7 +213,7 @@ if uploaded_file:
         "signature": signature
     }
 
-    st.write("Uploading...")
+    st.write("Uploading to Cloudinary...")
     response = requests.post(upload_url, files=files, data=data)
     st.write("Status Code:", response.status_code)
 
