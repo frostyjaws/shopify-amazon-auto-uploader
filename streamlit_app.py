@@ -11,7 +11,9 @@ def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     }
 
     response = requests.post(imgbb_url, files=data)
-    response.raise_for_status()
+
+    if not response.ok:
+        raise Exception(f"ImgBB Upload Failed: {response.status_code} - {response.text}")
     image_url = response.json()["data"]["url"]
 
     # === Create Shopify Product ===
