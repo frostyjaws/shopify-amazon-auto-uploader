@@ -1,12 +1,13 @@
+
 import streamlit as st
 import os
-import base64
 import csv
+import base64
 import requests
 from io import BytesIO
 from PIL import Image
 
-# === CONFIG (from secrets or env) ===
+# === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
 SHOPIFY_STORE = st.secrets["SHOPIFY_STORE"]
 LWA_CLIENT_ID = st.secrets["LWA_CLIENT_ID"]
@@ -23,23 +24,6 @@ ACCESSORY_IMAGES = [
     "https://m.media-amazon.com/images/I/71HvcLmnGkL._AC_SX569_.jpg"
 ]
 
-VARIATIONS = [
-    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-]
-
-PRICES = [
-    21.99, 22.99, 27.99, 21.99, 22.99, 27.99, 27.99,
-    21.99, 22.99, 27.99, 27.99, 27.99, 21.99, 22.99,
-    27.99, 27.99, 21.99, 22.99, 27.99, 27.99, 27.99,
-    21.99, 22.99, 27.99, 21.99, 22.99, 27.99
-]
-
 BULLETS = [
     "🎨 High-Quality Ink Printing",
     "🎖️ Proudly Veteran-Owned",
@@ -50,48 +34,54 @@ BULLETS = [
 
 DESCRIPTION = "<p>Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!</p>"
 
-def get_amazon_access_token():
-    r = requests.post("https://api.amazon.com/auth/o2/token", data={
-        "grant_type": "refresh_token",
-        "refresh_token": REFRESH_TOKEN,
-        "client_id": LWA_CLIENT_ID,
-        "client_secret": LWA_CLIENT_SECRET
-    })
-    r.raise_for_status()
-    return r.json()["access_token"]
-
-def upload_image_and_get_cdn(image_bytes, title="Draft Upload"):
-    # Create draft product
-    url_product = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
+def upload_image_to_shopify(image_bytes, filename):
+    url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/files.json"
     headers = {
         "X-Shopify-Access-Token": SHOPIFY_TOKEN,
         "Content-Type": "application/json"
     }
-    product_data = {
-        "product": {
-            "title": title
+    data = {
+        "file": {
+            "attachment": base64.b64encode(image_bytes).decode("utf-8"),
+            "filename": filename
         }
     }
-    response = requests.post(url_product, json=product_data, headers=headers)
-    response.raise_for_status()
-    product_id = response.json()["product"]["id"]
+    r = requests.post(url, json=data, headers=headers)
+    r.raise_for_status()
+    return r.json()["file"]["url"]
 
-    # Upload image via base64
-    encoded = base64.b64encode(image_bytes).decode()
-    url_image = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products/{product_id}/images.json"
-    image_data = {
-        "image": {
-            "attachment": encoded
+def create_shopify_product(title, image_url):
+    url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
+    headers = {
+        "X-Shopify-Access-Token": SHOPIFY_TOKEN,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "product": {
+            "title": title + " - Baby Boy Girl Clothes Bodysuit Funny Cute",
+            "body_html": DESCRIPTION,
+            "vendor": "NOFO VIBES",
+            "tags": "baby,funny,onesie,cute,custom",
+            "images": [{"src": image_url}]
         }
     }
-    img_response = requests.post(url_image, json=image_data, headers=headers)
-    img_response.raise_for_status()
-    img_url = img_response.json()["image"]["src"]
-    return img_url
+    r = requests.post(url, json=payload, headers=headers)
+    r.raise_for_status()
+    return r.json()["product"]["id"]
 
 def generate_amazon_feed(title, image_url):
-    feed_data = BytesIO()
-    writer = csv.writer(feed_data, delimiter="\t")
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+    prices = [21.99, 22.99, 27.99] * 9
+    feed = BytesIO()
+    writer = csv.writer(feed, delimiter="\t")
     writer.writerow([
         "item_sku", "item_name", "brand_name", "feed_product_type", "update_delete",
         "parent_child", "parent_sku", "relationship_type", "variation_theme",
@@ -107,7 +97,7 @@ def generate_amazon_feed(title, image_url):
         "parent", "", "", "Size", "", "", image_url,
         *ACCESSORY_IMAGES, *BULLETS, DESCRIPTION
     ])
-    for i, var in enumerate(VARIATIONS):
+    for i, var in enumerate(variations):
         size, color, sleeve = var.split()[0], var.split()[1], var.split()[-2:]
         abbr = "SS" if "Short" in sleeve else "LS"
         sku = f"{title}-{size}-{color}-{abbr}".replace(" ", "")
@@ -115,44 +105,41 @@ def generate_amazon_feed(title, image_url):
             sku, f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute",
             "NOFO VIBES", "infant-and-toddler-bodysuits", "Update",
             "child", f"{title}-Parent", "variation", "Size",
-            PRICES[i], 999, image_url, *ACCESSORY_IMAGES,
+            prices[i], 999, image_url, *ACCESSORY_IMAGES,
             *BULLETS, DESCRIPTION
         ])
-    feed_data.seek(0)
-    return feed_data
+    feed.seek(0)
+    return feed
 
-def submit_feed(feed_file, access_token):
+def submit_amazon_feed(feed_file, access_token):
     doc_req = requests.post(
         "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
-        headers={
-            "x-amz-access-token": access_token,
-            "Content-Type": "application/json"
-        },
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
         json={"contentType": "text/tab-separated-values;charset=UTF-8"}
     )
-    doc_req.raise_for_status()
     doc = doc_req.json()
     requests.put(doc["url"], data=feed_file.read(), headers={
         "Content-Type": "text/tab-separated-values;charset=UTF-8"
-    }).raise_for_status()
+    })
     feed_file.seek(0)
     feed_req = requests.post(
         "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
-        headers={
-            "x-amz-access-token": access_token,
-            "Content-Type": "application/json"
-        },
-        json={
-            "feedType": "POST_FLAT_FILE_LISTINGS_DATA",
-            "marketplaceIds": [MARKETPLACE_ID],
-            "inputFeedDocumentId": doc["feedDocumentId"]
-        }
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+        json={"feedType": "POST_FLAT_FILE_LISTINGS_DATA", "marketplaceIds": [MARKETPLACE_ID], "inputFeedDocumentId": doc["feedDocumentId"]}
     )
-    feed_req.raise_for_status()
     return feed_req.json()["feedId"]
 
-# === STREAMLIT APP UI ===
-st.title("🍼 Shopify + Amazon Auto-Uploader")
+def get_amazon_access_token():
+    r = requests.post("https://api.amazon.com/auth/o2/token", data={
+        "grant_type": "refresh_token",
+        "refresh_token": REFRESH_TOKEN,
+        "client_id": LWA_CLIENT_ID,
+        "client_secret": LWA_CLIENT_SECRET
+    })
+    return r.json()["access_token"]
+
+# === STREAMLIT UI ===
+st.title("🍼 Upload PNG → Auto-List to Shopify + Amazon")
 
 uploaded_file = st.file_uploader("Upload PNG File", type="png")
 if uploaded_file:
@@ -160,19 +147,22 @@ if uploaded_file:
     title = os.path.splitext(uploaded_file.name)[0].replace("-", " ").replace("_", " ").title()
     st.image(image, caption=title, use_container_width=True)
 
-    if st.button("📤 Upload & Submit Feed"):
+    if st.button("📤 Submit to Shopify + Amazon"):
         try:
             image_bytes = uploaded_file.read()
-            st.info("Uploading image to Shopify draft product...")
-            img_url = upload_image_and_get_cdn(image_bytes, uploaded_file.name)
+            st.info("Uploading image to Shopify...")
+            img_url = upload_image_to_shopify(image_bytes, uploaded_file.name)
 
-            st.info("Generating Amazon flat file...")
+            st.info("Creating product on Shopify...")
+            create_shopify_product(title, img_url)
+
+            st.info("Generating Amazon feed file...")
+            token = get_amazon_access_token()
             feed = generate_amazon_feed(title, img_url)
 
-            st.info("Submitting to Amazon SP-API...")
-            token = get_amazon_access_token()
-            feed_id = submit_feed(feed, token)
+            st.info("Submitting to Amazon...")
+            feed_id = submit_amazon_feed(feed, token)
 
-            st.success(f"✅ Feed Submitted! ID: {feed_id}")
+            st.success(f"✅ Amazon Feed Submitted! Feed ID: {feed_id}")
         except Exception as e:
             st.error(f"❌ Error: {e}")
