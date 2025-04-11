@@ -6,12 +6,12 @@ def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
     data = {
-        "key": imgbb_api_key,
-        "image": b64_image,
-        "name": title_slug
-    }
+    "key": (None, imgbb_api_key),
+    "image": (None, b64_image),
+    "name": (None, title_slug)
+}
 
-    response = requests.post(imgbb_url, data=data)
+response = requests.post(imgbb_url, files=data)
     response.raise_for_status()
     image_url = response.json()["data"]["url"]
 
