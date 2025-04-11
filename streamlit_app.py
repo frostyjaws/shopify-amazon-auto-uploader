@@ -60,54 +60,34 @@ def get_amazon_access_token():
     r.raise_for_status()
     return r.json()["access_token"]
 
-def upload_image_to_shopify_cdn(image_bytes, filename="temp.png"):
-    url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/graphql.json"
+def upload_image_and_get_cdn(image_bytes, title="Draft Upload"):
+    # Create draft product
+    url_product = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
     headers = {
         "X-Shopify-Access-Token": SHOPIFY_TOKEN,
         "Content-Type": "application/json"
     }
-    import base64
-    encoded_file = base64.b64encode(image_bytes).decode("utf-8")
-    query = {
-        "query": """
-            mutation fileCreate($files: [FileCreateInput!]!) {
-              fileCreate(files: $files) {
-                files {
-                  alt
-                  createdAt
-                  fileStatus
-                  preview {
-                    image {
-                      url
-                    }
-                  }
-                }
-                userErrors {
-                  field
-                  message
-                }
-              }
-            }
-        """,
-        "variables": {
-            "files": [{
-                "alt": "Design Upload",
-                "contentType": "IMAGE",
-                "originalSource": f"data:image/png;base64,{encoded_file}",
-                "filename": filename
-            }]
+    product_data = {
+        "product": {
+            "title": title
         }
     }
-    r = requests.post(url, headers=headers, json=query)
-    r.raise_for_status()
-    data = r.json()
-    try:
-        image_url = data["data"]["fileCreate"]["files"][0]["preview"]["image"]["url"]
-        return image_url
-    except Exception:
-        raise Exception(f"Image upload failed. Shopify response: {data}")
+    response = requests.post(url_product, json=product_data, headers=headers)
+    response.raise_for_status()
+    product_id = response.json()["product"]["id"]
 
-
+    # Upload image via base64
+    encoded = base64.b64encode(image_bytes).decode()
+    url_image = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products/{product_id}/images.json"
+    image_data = {
+        "image": {
+            "attachment": encoded
+        }
+    }
+    img_response = requests.post(url_image, json=image_data, headers=headers)
+    img_response.raise_for_status()
+    img_url = img_response.json()["image"]["src"]
+    return img_url
 
 def generate_amazon_feed(title, image_url):
     feed_data = BytesIO()
@@ -171,6 +151,7 @@ def submit_feed(feed_file, access_token):
     feed_req.raise_for_status()
     return feed_req.json()["feedId"]
 
+# === STREAMLIT APP UI ===
 st.title("🍼 Shopify + Amazon Auto-Uploader")
 
 uploaded_file = st.file_uploader("Upload PNG File", type="png")
@@ -182,13 +163,13 @@ if uploaded_file:
     if st.button("📤 Upload & Submit Feed"):
         try:
             image_bytes = uploaded_file.read()
-            st.info("Uploading to Shopify...")
-            img_url = upload_image_to_shopify_cdn(image_bytes, uploaded_file.name)
+            st.info("Uploading image to Shopify draft product...")
+            img_url = upload_image_and_get_cdn(image_bytes, uploaded_file.name)
 
-            st.info("Generating feed file...")
+            st.info("Generating Amazon flat file...")
             feed = generate_amazon_feed(title, img_url)
 
-            st.info("Submitting to Amazon...")
+            st.info("Submitting to Amazon SP-API...")
             token = get_amazon_access_token()
             feed_id = submit_feed(feed, token)
 
