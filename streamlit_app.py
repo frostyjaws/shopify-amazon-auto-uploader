@@ -154,7 +154,10 @@ st.title("🍼 Upload PNG → Auto-List to Shopify + Amazon")
 
 uploaded_file = st.file_uploader("Upload PNG File", type="png")
 if uploaded_file:
+    image_bytes = uploaded_file.read()
+    uploaded_file.seek(0)  # 🔁 rewind so we can read it again
     image = Image.open(uploaded_file)
+
     file_stem = os.path.splitext(uploaded_file.name)[0]
     title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Boy Girl Clothes Bodysuit Funny Cute"
     handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-boy-girl-clothes-bodysuit-funny-cute"
