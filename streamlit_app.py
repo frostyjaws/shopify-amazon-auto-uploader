@@ -75,11 +75,14 @@ def upload_to_shopify(image_bytes, title):
     }
     r = requests.post(url, json=data, headers=headers)
     r.raise_for_status()
-    images = r.json()["product"].get("images", [])
-if not images:
-    raise Exception("Image upload to Shopify failed — no image URL returned.")
-return images[0]["src"]
 
+    product_data = r.json()
+    images = product_data.get("product", {}).get("images", [])
+
+    if not images:
+        raise Exception("Shopify product created, but image URL was not returned. Image may not have uploaded successfully.")
+
+    return images[0]["src"]
 
 def generate_amazon_feed(title, image_url):
     feed_data = BytesIO()
