@@ -53,7 +53,23 @@ def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     }
     r = requests.post(url, json=payload, headers=headers)
     r.raise_for_status()
-    return r.json()["product"]["images"][0]["src"]
+    product = r.json()["product"]
+
+    # Fallback: refetch image if not returned immediately
+    if not product.get("images"):
+        product_id = product["id"]
+        r2 = requests.get(
+            f"https://{SHOPIFY_STORE}/admin/api/2023-01/products/{product_id}.json",
+            headers=headers
+        )
+        r2.raise_for_status()
+        product = r2.json()["product"]
+
+    if not product.get("images"):
+        raise Exception("Shopify product created, but image URL was not returned. Try again.")
+
+    return product["images"][0]["src"]
+
 
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
