@@ -60,38 +60,53 @@ def get_amazon_access_token():
     r.raise_for_status()
     return r.json()["access_token"]
 
-def upload_to_shopify(image_bytes, title):
-    # Step 1: Create product without image
-    url_create = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
+def upload_image_to_shopify_cdn(image_bytes, filename="temp.png"):
+    url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/graphql.json"
     headers = {
         "X-Shopify-Access-Token": SHOPIFY_TOKEN,
         "Content-Type": "application/json"
     }
-    product_data = {
-        "product": {
-            "title": title
+    import base64
+    encoded_file = base64.b64encode(image_bytes).decode("utf-8")
+    query = {
+        "query": """
+            mutation fileCreate($files: [FileCreateInput!]!) {
+              fileCreate(files: $files) {
+                files {
+                  alt
+                  createdAt
+                  fileStatus
+                  preview {
+                    image {
+                      url
+                    }
+                  }
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+        """,
+        "variables": {
+            "files": [{
+                "alt": "Design Upload",
+                "contentType": "IMAGE",
+                "originalSource": f"data:image/png;base64,{encoded_file}",
+                "filename": filename
+            }]
         }
     }
-    r = requests.post(url_create, json=product_data, headers=headers)
+    r = requests.post(url, headers=headers, json=query)
     r.raise_for_status()
-    product_id = r.json()["product"]["id"]
+    data = r.json()
+    try:
+        image_url = data["data"]["fileCreate"]["files"][0]["preview"]["image"]["url"]
+        return image_url
+    except Exception:
+        raise Exception(f"Image upload failed. Shopify response: {data}")
 
-    # Step 2: Upload image separately to product
-    encoded = base64.b64encode(image_bytes).decode()
-    url_image = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products/{product_id}/images.json"
-    image_data = {
-        "image": {
-            "attachment": encoded
-        }
-    }
-    r_img = requests.post(url_image, json=image_data, headers=headers)
-    r_img.raise_for_status()
-
-    images = r_img.json().get("image")
-    if not images or "src" not in images:
-        raise Exception("Image upload failed. Shopify didn't return image URL.")
-
-    return images["src"]
 
 
 def generate_amazon_feed(title, image_url):
