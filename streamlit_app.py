@@ -183,7 +183,7 @@ if uploaded_file:
         try:
             image_bytes = uploaded_file.read()
             st.info("Uploading to Shopify...")
-            img_url = upload_to_shopify(image_bytes, title)
+            img_url = upload_image_to_shopify_cdn(image_bytes, uploaded_file.name)
 
             st.info("Generating feed file...")
             feed = generate_amazon_feed(title, img_url)
