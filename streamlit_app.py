@@ -2,15 +2,14 @@ def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
     # === Upload to ImgBB ===
     imgbb_api_key = st.secrets["IMGBB_API_KEY"]
     imgbb_url = "https://api.imgbb.com/1/upload"
-    b64_image = base64.b64encode(image_bytes).decode("utf-8")
-
-    data = {
+    uploaded_file.seek(0)  # Make sure it's rewinded
+    files = {
         "key": (None, imgbb_api_key),
-        "image": (None, b64_image),
-        "name": (None, title_slug)
+        "name": (None, title_slug),
+        "image": uploaded_file  # Raw PNG upload
     }
 
-    response = requests.post(imgbb_url, files=data)
+    response = requests.post(imgbb_url, files=files)
 
     if not response.ok:
         raise Exception(f"ImgBB Upload Failed: {response.status_code} - {response.text}")
