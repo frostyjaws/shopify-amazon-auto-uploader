@@ -179,4 +179,4 @@ if uploaded_file:
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
-        st.error(f"❌ Upload failed: {response.text}")
+        
