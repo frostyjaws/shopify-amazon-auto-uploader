@@ -1,4 +1,4 @@
-def upload_and_create_shopify_product(image_bytes, title_slug, title_full):
+def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     # === Upload to ImgBB ===
     imgbb_api_key = st.secrets["IMGBB_API_KEY"]
     imgbb_url = "https://api.imgbb.com/1/upload"
