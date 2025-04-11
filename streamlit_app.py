@@ -183,3 +183,44 @@ if uploaded_file:
             st.success(f"✅ Amazon Feed Submitted! Feed ID: {feed_id}")
         except Exception as e:
             st.error(f"❌ Error: {e}")
+
+import streamlit as st
+import time, hmac, hashlib
+import requests
+
+cloud_name = st.secrets["CLOUDINARY_CLOUD_NAME"]
+api_key = st.secrets["CLOUDINARY_API_KEY"]
+api_secret = st.secrets["CLOUDINARY_API_SECRET"]
+
+uploaded_file = st.file_uploader("Upload PNG to Test Cloudinary", type="png")
+
+if uploaded_file:
+    image_bytes = uploaded_file.read()
+    timestamp = str(int(time.time()))
+    string_to_sign = f"timestamp={timestamp}"
+    signature = hmac.new(
+        api_secret.encode("utf-8"),
+        msg=string_to_sign.encode("utf-8"),
+        digestmod=hashlib.sha1
+    ).hexdigest()
+
+    upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
+    files = {"file": image_bytes}
+    data = {
+        "api_key": api_key,
+        "timestamp": timestamp,
+        "signature": signature
+    }
+
+    st.write("Uploading...")
+    response = requests.post(upload_url, files=files, data=data)
+    st.write("Status Code:", response.status_code)
+
+    if response.ok:
+        image_url = response.json()["secure_url"]
+        st.success("✅ Upload succeeded!")
+        st.image(image_url)
+        st.write(image_url)
+    else:
+        st.error(f"❌ Upload failed: {response.text}")
+
