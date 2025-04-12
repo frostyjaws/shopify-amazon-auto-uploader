@@ -180,3 +180,74 @@ if uploaded_file:
             st.error(f"❌ Error: {e}")
 
         
+
+
+
+def generate_amazon_json_feed(title, image_url):
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+
+    BULLETS = [
+        "🎨 High-Quality Ink Printing",
+        "🎖️ Proudly Veteran-Owned",
+        "👶 Comfort and Convenience",
+        "🎁 Perfect Baby Shower Gift",
+        "📏 Versatile Sizing & Colors"
+    ]
+    DESCRIPTION = "<p>Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!</p>"
+
+    feed_data = []
+    parent_sku = f"{title}-Parent"
+
+    parent_product = {
+        "sku": parent_sku,
+        "productType": "BABY_ONE_PIECE",
+        "requirements": "LISTING",
+        "attributes": {
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "variation_theme": [{"value": "size_name"}],
+            "bullet_point": [{"value": bullet} for bullet in BULLETS],
+            "main_image_url": [{"value": image_url}],
+            "manufacturer": [{"value": "NOFO VIBES"}],
+            "external_product_id_type": [{"value": "ASIN"}]
+        }
+    }
+    feed_data.append(parent_product)
+
+    for var in variations:
+        size = var
+        abbr = "SS" if "Short" in size else "LS"
+        sku = f"{title}-{size.replace(' ', '')}-{abbr}"
+
+        child_product = {
+            "sku": sku,
+            "productType": "BABY_ONE_PIECE",
+            "requirements": "LISTING",
+            "attributes": {
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+                "product_description": [{"value": DESCRIPTION}],
+                "parentage": [{"value": "child"}],
+                "parent_sku": [{"value": parent_sku}],
+                "variation_theme": [{"value": "size_name"}],
+                "size_name": [{"value": size}],
+                "bullet_point": [{"value": bullet} for bullet in BULLETS],
+                "main_image_url": [{"value": image_url}],
+                "standard_price": [{"value": "21.99", "currency": "USD"}],
+                "quantity": [{"value": "999"}],
+                "manufacturer": [{"value": "NOFO VIBES"}],
+                "external_product_id_type": [{"value": "ASIN"}]
+            }
+        }
+        feed_data.append(child_product)
+
+    return json.dumps(feed_data, indent=2)
