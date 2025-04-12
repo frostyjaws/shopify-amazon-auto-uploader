@@ -68,51 +68,57 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return image_url
 
 
-def generate_amazon_json_feed(title, image_url, SELLER_ID):
-    messages = []
-    for idx, var in enumerate(VARIATIONS, start=1):
-        abbr = "SS" if "Short" in var else "LS"
-        sku = f"{title}-{var.replace(' ', '')}-{abbr}"
-        messages.append({
-            "messageId": idx,
+def generate_amazon_json_feed(title, image_url):
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+
+    def format_variation(var):
+        size, color, *sleeve = var.split()
+        sleeve_abbr = "SS" if "Short" in sleeve else "LS"
+        return f"{title}-{size}-{color}-{sleeve_abbr}".replace(" ", ""), var
+
+    items = []
+    for var in variations:
+        sku, size_label = format_variation(var)
+        item = {
             "sku": sku,
-            "operationType": "UPDATE",
             "productType": "baby_one_piece",
             "attributes": {
-    "brand": [{"value": "NOFO VIBES"}],
-    "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-    "manufacturer": [{"value": "NOFO VIBES"}],
-    "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
-    "main_image": [{"value": image_url}],
-    "bullet_point": [
-        {"value": "🎨 High-Quality Ink Printing"},
-        {"value": "🎖️ Proudly Veteran-Owned"},
-        {"value": "👶 Comfort and Convenience"},
-        {"value": "🎁 Perfect Baby Shower Gift"},
-        {"value": "📏 Versatile Sizing & Colors"}
-    ],
-    "product_site_launch_date": [{"value": "2023-01-01"}],
-    "country_of_origin": [{"value": "US"}],
-    "department": [{"value": "baby-boys"}],
-    "parentage": [{"value": "child"}],
-    "variation_theme": [{"value": "size_name"}],
-    "size_name": [{"value": var}]
-}],
-                "item_name": [{"value": f"{title} - Baby Bodysuit"}],
-                "product_description": [{"value": DESCRIPTION}],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
                 "manufacturer": [{"value": "NOFO VIBES"}],
-                "bullet_point": [{"value": b} for b in BULLETS],
-                "main_image": [{"value": image_url}],                "variation_theme": [{"value": "size_name"}],
-                "size_name": [{"value": var}]
+                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
+                "main_image": [{"value": image_url}],
+                "bullet_point": [
+                    {"value": "🎨 High-Quality Ink Printing"},
+                    {"value": "🎖️ Proudly Veteran-Owned"},
+                    {"value": "👶 Comfort and Convenience"},
+                    {"value": "🎁 Perfect Baby Shower Gift"},
+                    {"value": "📏 Versatile Sizing & Colors"}
+                ],
+                "product_site_launch_date": [{"value": "2023-01-01"}],
+                "country_of_origin": [{"value": "US"}],
+                "department": [{"value": "baby-boys"}],
+                "parentage": [{"value": "child"}],
+                "variation_theme": [{"value": "size_name"}],
+                "size_name": [{"value": size_label}]
             }
-        })
+        }
+        items.append(item)
+
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
-            "version": "2.0",
-            "issueLocale": "en_US"
+            "version": "2.0"
         },
-        "messages": messages
+        "items": items
     }, indent=2)
 
 
