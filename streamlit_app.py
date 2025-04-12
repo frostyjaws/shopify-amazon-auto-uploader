@@ -10,6 +10,93 @@ from io import BytesIO
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
 SHOPIFY_STORE = st.secrets["SHOPIFY_STORE"]
 IMGBB_API_KEY = st.secrets["IMGBB_API_KEY"]
+
+def generate_amazon_json_feed(title, image_url):
+    import random
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+
+    def abbrev(title):
+        return ''.join(w[0] for w in title.split()).upper()
+
+    def format_sku(title_abbr, idx, var):
+        size, color, *sleeve = var.split()
+        sleeve_abbr = "SS" if "Short" in var else "LS"
+        return f"{title_abbr}28{idx+1:02}-{size.replace('-', '')}-{color[:3].upper()}-{sleeve_abbr}"
+
+    title_abbr = abbrev(title)
+    parent_sku = f"{title_abbr}28-PARENT"
+    messages = []
+
+    messages.append({
+        "messageId": 1,
+        "operationType": "UPSERT",
+        "sku": parent_sku,
+        "productType": "infant_and_toddler_bodysuits",
+        "attributes": {
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_name": [{"value": f"{title} - Baby Bodysuit"}],
+            "product_description": [{"value": "Celebrate your little one's arrival with a custom baby bodysuit from NOFO VIBES!"}],
+            "bullet_point": [
+                {"value": "🎨 High-Quality Ink Printing"},
+                {"value": "🎖️ Proudly Veteran-Owned"},
+                {"value": "👶 Comfort and Convenience"},
+                {"value": "🎁 Perfect Baby Shower Gift"},
+                {"value": "🔯 Versatile Sizing & Colors"}
+            ],
+            "manufacturer": [{"value": "NOFO VIBES"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": MARKETPLACE_ID
+            }],
+            "variation_theme": [{"name": "size_name"}],
+            "parentage": [{"value": "parent"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}]
+        }
+    })
+
+    for i, var in enumerate(variations):
+        sku = format_sku(title_abbr, i, var)
+        messages.append({
+            "messageId": i + 2,
+            "operationType": "UPSERT",
+            "sku": sku,
+            "productType": "infant_and_toddler_bodysuits",
+            "attributes": {
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_name": [{"value": f"{title} - {var}"}],
+                "product_description": [{"value": "Celebrate your little one's arrival with a custom baby bodysuit from NOFO VIBES!"}],
+                "bullet_point": [
+                    {"value": "🎨 High-Quality Ink Printing"},
+                    {"value": "🎖️ Proudly Veteran-Owned"},
+                    {"value": "👶 Comfort and Convenience"},
+                    {"value": "🎁 Perfect Baby Shower Gift"},
+                    {"value": "🔯 Versatile Sizing & Colors"}
+                ],
+                "manufacturer": [{"value": "NOFO VIBES"}],
+                "main_product_image_locator": [{
+                    "media_location": image_url,
+                    "marketplace_id": MARKETPLACE_ID
+                }],
+                "variation_theme": [{"name": "size_name", "values": [var]}],
+                "parentage": [{"value": "child"}],
+                "parent_sku": [{"value": parent_sku}],
+                "country_of_origin": [{"value": "US"}],
+                "condition_type": [{"value": "new_new"}]
+            }
+        })
+
+    return json.dumps({
+
+
 LWA_CLIENT_ID = st.secrets["LWA_CLIENT_ID"]
 LWA_CLIENT_SECRET = st.secrets["LWA_CLIENT_SECRET"]
 REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
@@ -240,90 +327,7 @@ if uploaded_file:
 
 
 
-def generate_amazon_json_feed(title, image_url):
-    import random
-    variations = [
-        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-    ]
 
-    def abbrev(title):
-        return ''.join(w[0] for w in title.split()).upper()
-
-    def format_sku(title_abbr, idx, var):
-        size, color, *sleeve = var.split()
-        sleeve_abbr = "SS" if "Short" in var else "LS"
-        return f"{title_abbr}28{idx+1:02}-{size.replace('-', '')}-{color[:3].upper()}-{sleeve_abbr}"
-
-    title_abbr = abbrev(title)
-    parent_sku = f"{title_abbr}28-PARENT"
-    messages = []
-
-    messages.append({
-        "messageId": 1,
-        "operationType": "UPSERT",
-        "sku": parent_sku,
-        "productType": "infant_and_toddler_bodysuits",
-        "attributes": {
-            "brand": [{"value": "NOFO VIBES"}],
-            "item_name": [{"value": f"{title} - Baby Bodysuit"}],
-            "product_description": [{"value": "Celebrate your little one's arrival with a custom baby bodysuit from NOFO VIBES!"}],
-            "bullet_point": [
-                {"value": "🎨 High-Quality Ink Printing"},
-                {"value": "🎖️ Proudly Veteran-Owned"},
-                {"value": "👶 Comfort and Convenience"},
-                {"value": "🎁 Perfect Baby Shower Gift"},
-                {"value": "🔯 Versatile Sizing & Colors"}
-            ],
-            "manufacturer": [{"value": "NOFO VIBES"}],
-            "main_product_image_locator": [{
-                "media_location": image_url,
-                "marketplace_id": MARKETPLACE_ID
-            }],
-            "variation_theme": [{"name": "size_name"}],
-            "parentage": [{"value": "parent"}],
-            "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}]
-        }
-    })
-
-    for i, var in enumerate(variations):
-        sku = format_sku(title_abbr, i, var)
-        messages.append({
-            "messageId": i + 2,
-            "operationType": "UPSERT",
-            "sku": sku,
-            "productType": "infant_and_toddler_bodysuits",
-            "attributes": {
-                "brand": [{"value": "NOFO VIBES"}],
-                "item_name": [{"value": f"{title} - {var}"}],
-                "product_description": [{"value": "Celebrate your little one's arrival with a custom baby bodysuit from NOFO VIBES!"}],
-                "bullet_point": [
-                    {"value": "🎨 High-Quality Ink Printing"},
-                    {"value": "🎖️ Proudly Veteran-Owned"},
-                    {"value": "👶 Comfort and Convenience"},
-                    {"value": "🎁 Perfect Baby Shower Gift"},
-                    {"value": "🔯 Versatile Sizing & Colors"}
-                ],
-                "manufacturer": [{"value": "NOFO VIBES"}],
-                "main_product_image_locator": [{
-                    "media_location": image_url,
-                    "marketplace_id": MARKETPLACE_ID
-                }],
-                "variation_theme": [{"name": "size_name", "values": [var]}],
-                "parentage": [{"value": "child"}],
-                "parent_sku": [{"value": parent_sku}],
-                "country_of_origin": [{"value": "US"}],
-                "condition_type": [{"value": "new_new"}]
-            }
-        })
-
-    return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
             "version": "2.0"
