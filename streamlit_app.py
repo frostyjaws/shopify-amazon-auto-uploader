@@ -34,7 +34,6 @@ VARIATIONS = [
     "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
 ]
 
-
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     uploaded_file.seek(0)
     imgbb_url = "https://api.imgbb.com/1/upload"
@@ -67,65 +66,94 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     r.raise_for_status()
     return image_url
 
-
 def generate_amazon_json_feed(title, image_url):
-    messages = []
-    for idx, var in enumerate(VARIATIONS, start=1):
+    # Generate parent SKU
+    parent_sku = f"{title}-PARENT"
+    
+    # Create parent product message
+    parent_message = {
+        "messageId": 1,
+        "sku": parent_sku,
+        "operationType": "UPDATE",
+        "productType": "BABY_ONE_PIECE",
+        "requirements": "LISTING",
+        "attributes": {
+            "item_name": [{"value": f"{title} - Baby Bodysuit", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "brand": [{"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "item_type_keyword": [{"value": "bodysuits", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "product_description": [{"value": DESCRIPTION, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "bullet_point": [{"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS],
+            "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
+            "target_gender": [{"value": "unisex", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "age_range_description": [{"value": "0-24 months", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "material": [{"value": "100% cotton", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "department": [{"value": "baby", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "variation_theme": [{"name": "SIZE_COLOR"}],  # Corrected to use "name" instead of "value"
+            "parentage_level": [{"value": "parent", "marketplace_id": MARKETPLACE_ID}],
+            "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": parent_sku}],
+            "model_number": [{"value": title.replace("-", ""), "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "country_of_origin": [{"value": "US", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+            "condition_type": [{"value": "new_new", "marketplace_id": MARKETPLACE_ID}],
+            "batteries_required": [{"value": False, "marketplace_id": MARKETPLACE_ID}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable", "marketplace_id": MARKETPLACE_ID}]
+        }
+    }
+    
+    messages = [parent_message]
+    
+    # Create variant messages
+    for idx, var in enumerate(VARIATIONS, start=2):
+        # Extract size and color from variation
+        parts = var.split()
+        size = " ".join(parts[:1] if parts[0] in ["Newborn", "6M"] else parts[:2]
+        color = parts[-2] if parts[-1] == "Sleeve" else parts[-3]
+        sleeve_type = "Short Sleeve" if "Short" in var else "Long Sleeve"
+        
         abbr = "SS" if "Short" in var else "LS"
         sku = f"{title}-{var.replace(' ', '')}-{abbr}"
-        messages.append({
+        
+        variant_message = {
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "BABY_ONE_PIECE",
             "requirements": "LISTING",
             "attributes": {
-                "condition_type": [
-                    {"value": "new_new", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "item_name": [
-                    {"value": f"{title} - Baby Bodysuit", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "brand": [
-                    {"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "product_description": [
-                    {"value": DESCRIPTION, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "bullet_point": [
-                    {"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS
-                ],
-                "main_product_image_locator": [
-                    {"media_location": image_url, "marketplace_id": MARKETPLACE_ID}
-                ],
-                "purchasable_offer": [
-                    {
-                        "currency": "USD",
-                        "our_price": [
-                            {
-                                "schedule": [
-                                    {"value_with_tax": 21.99}
-                                ]
-                            }
-                        ],
-                        "marketplace_id": MARKETPLACE_ID
-                    }
-                ],
-                "fulfillment_availability": [
-                    {
-                        "quantity": 999,
-                        "fulfillment_channel_code": "DEFAULT",
-                        "marketplace_id": MARKETPLACE_ID
-                    }
-                ],
-                "variation_theme": [
-                    {"value": "size_name", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "size_name": [
-                    {"value": var, "marketplace_id": MARKETPLACE_ID}
-                ]
+                "item_name": [{"value": f"{title} - Baby Bodysuit - {var}", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "brand": [{"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "item_type_keyword": [{"value": "bodysuits", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "product_description": [{"value": f"{DESCRIPTION} Size: {size}, Color: {color}, Sleeve: {sleeve_type}", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "bullet_point": [{"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS[:3]],
+                "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
+                "target_gender": [{"value": "unisex", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "age_range_description": [{"value": "0-24 months", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "material": [{"value": "100% cotton", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "department": [{"value": "baby", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "variation_theme": [{"name": "SIZE_COLOR"}],  # Consistent with parent
+                "parentage_level": [{"value": "child", "marketplace_id": MARKETPLACE_ID}],
+                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": parent_sku}],
+                "model_number": [{"value": title.replace("-", ""), "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "size": [{"value": size, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "color": [{"value": color, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "style": [{"value": sleeve_type, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "country_of_origin": [{"value": "US", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
+                "condition_type": [{"value": "new_new", "marketplace_id": MARKETPLACE_ID}],
+                "batteries_required": [{"value": False, "marketplace_id": MARKETPLACE_ID}],
+                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable", "marketplace_id": MARKETPLACE_ID}],
+                "purchasable_offer": [{
+                    "currency": "USD",
+                    "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                    "marketplace_id": MARKETPLACE_ID
+                }],
+                "fulfillment_availability": [{
+                    "quantity": 999,
+                    "fulfillment_channel_code": "DEFAULT",
+                    "marketplace_id": MARKETPLACE_ID
+                }]
             }
-        })
+        }
+        messages.append(variant_message)
+    
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
