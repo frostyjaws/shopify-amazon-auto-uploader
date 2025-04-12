@@ -151,7 +151,7 @@ def submit_amazon_feed(feed_file, access_token):
     feed_req = requests.post(
         "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
         headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
-        json={"feedType": "POST_FLAT_FILE_LISTINGS_DATA", "marketplaceIds": [MARKETPLACE_ID], "inputFeedDocumentId": doc["feedDocumentId"]}
+        json={"feedType": "JSON_LISTINGS_FEED", "marketplaceIds": [MARKETPLACE_ID], "inputFeedDocumentId": doc["feedDocumentId"]}
     )
     return feed_req.json()["feedId"]
 
@@ -297,7 +297,7 @@ def submit_amazon_json_feed(json_feed, access_token):
             "Content-Type": "application/json"
         },
         json={
-            "feedType": "POST_PRODUCT_DATA",
+            "feedType": "JSON_LISTINGS_FEED",
             "marketplaceIds": [MARKETPLACE_ID],
             "inputFeedDocumentId": doc["feedDocumentId"]
         }
