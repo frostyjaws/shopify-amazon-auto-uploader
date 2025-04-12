@@ -67,79 +67,74 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return image_url
 
 def generate_amazon_json_feed(title, image_url):
-    # Generate parent SKU
-    parent_sku = f"{title}-PARENT"
-    
-    # Create parent product message
-    parent_message = {
-        "messageId": 1,
-        "sku": parent_sku,
-        "operationType": "UPDATE",
-        "productType": "BABY_ONE_PIECE",
-        "requirements": "LISTING",
-        "attributes": {
-            "item_name": [{"value": f"{title} - Baby Bodysuit", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "brand": [{"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "item_type_keyword": [{"value": "bodysuits", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "product_description": [{"value": DESCRIPTION, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "bullet_point": [{"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS],
-            "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
-            "target_gender": [{"value": "unisex", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "age_range_description": [{"value": "0-24 months", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "material": [{"value": "100% cotton", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "department": [{"value": "baby", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "variation_theme": [{"name": "SIZE_COLOR"}],  # Corrected to use "name" instead of "value"
-            "parentage_level": [{"value": "parent", "marketplace_id": MARKETPLACE_ID}],
-            "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": parent_sku}],
-            "model_number": [{"value": title.replace("-", ""), "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "country_of_origin": [{"value": "US", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-            "condition_type": [{"value": "new_new", "marketplace_id": MARKETPLACE_ID}],
-            "batteries_required": [{"value": False, "marketplace_id": MARKETPLACE_ID}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable", "marketplace_id": MARKETPLACE_ID}]
+    messages = [
+        {
+            "messageId": 1,
+            "sku": f"{title}-PARENT",
+            "operationType": "UPDATE",
+            "productType": "LEOTARD",
+            "requirements": "LISTING",
+            "attributes": {
+                "item_name": [{"value": "Girls' Gymnastics Leotard"}],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_type_keyword": [{"value": "bodysuits"}],
+                "product_description": [{"value": DESCRIPTION}],
+                "bullet_point": [{"value": b} for b in BULLETS],
+                "target_gender": [{"value": "female"}],
+                "age_range_description": [{"value": "child"}],
+                "material": [{"value": "polyester"}, {"value": "spandex"}],
+                "department": [{"value": "girls"}],
+                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
+                "parentage_level": [{"value": "parent"}],
+                "model_number": [{"value": f"{title}"}],
+                "country_of_origin": [{"value": "CN"}],
+                "condition_type": [{"value": "new_new"}],
+                "batteries_required": [{"value": False}],
+                "fabric_type": [{"value": "100% cotton"}],
+                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
+            }
         }
-    }
-    
-    messages = [parent_message]
-    
-    # Create variant messages
-    for idx, var in enumerate(VARIATIONS, start=2):
-        # Extract size and color from variation
-        parts = var.split()
-        size = " ".join(parts[:1] if parts[0] in ["Newborn", "6M"] else parts[:2]
-        color = parts[-2] if parts[-1] == "Sleeve" else parts[-3]
-        sleeve_type = "Short Sleeve" if "Short" in var else "Long Sleeve"
-        
-        abbr = "SS" if "Short" in var else "LS"
-        sku = f"{title}-{var.replace(' ', '')}-{abbr}"
-        
-        variant_message = {
+    ]
+
+    for idx, (size, color, sleeve) in enumerate(VARIATIONS, start=2):
+        sku = f"{title}-{size}-{color}-{sleeve.replace(' ', '')}"
+        messages.append({
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
-            "productType": "BABY_ONE_PIECE",
+            "productType": "LEOTARD",
             "requirements": "LISTING",
             "attributes": {
-                "item_name": [{"value": f"{title} - Baby Bodysuit - {var}", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "brand": [{"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "item_type_keyword": [{"value": "bodysuits", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "product_description": [{"value": f"{DESCRIPTION} Size: {size}, Color: {color}, Sleeve: {sleeve_type}", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "bullet_point": [{"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS[:3]],
+                "item_name": [{"value": f"Girls' Leotard - {size} {color} {sleeve}"}],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_type_keyword": [{"value": "bodysuits"}],
+                "product_description": [{"value": f"Baby Leotard - {size} {color} {sleeve} - {DESCRIPTION}"}],
+                "bullet_point": [{"value": b} for b in BULLETS[:2]],
+                "target_gender": [{"value": "female"}],
+                "age_range_description": [{"value": "child"}],
+                "material": [{"value": "polyester"}, {"value": "spandex"}],
+                "department": [{"value": "girls"}],
+                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
+                "parentage_level": [{"value": "child"}],
+                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{title}-PARENT"}],
+                "model_number": [{"value": f"{title}"}],
+                "size_name": [{"value": size}],
+                "color": [{"value": color}],
+                "model_name": [{"value": "Classic Fit"}],
+                "style": [{"value": sleeve}],
+                "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
+                "merchant_suggested_asin": [{"value": "B07D3NM8X3"}],
+                "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
+                "item_package_dimensions": [{"length": {"value": 25.4, "unit": "centimeters"}, "width": {"value": 20.32, "unit": "centimeters"}, "height": {"value": 2.54, "unit": "centimeters"}}],
+                "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
+                "list_price": [{"currency": "USD", "value": 19.99}],
+                "import_designation": [{"value": "imported"}],
+                "country_of_origin": [{"value": "CN"}],
+                "condition_type": [{"value": "new_new"}],
+                "batteries_required": [{"value": False}],
+                "fabric_type": [{"value": "100% cotton"}],
+                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
                 "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
-                "target_gender": [{"value": "unisex", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "age_range_description": [{"value": "0-24 months", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "material": [{"value": "100% cotton", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "department": [{"value": "baby", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "variation_theme": [{"name": "SIZE_COLOR"}],  # Consistent with parent
-                "parentage_level": [{"value": "child", "marketplace_id": MARKETPLACE_ID}],
-                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": parent_sku}],
-                "model_number": [{"value": title.replace("-", ""), "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "size": [{"value": size, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "color": [{"value": color, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "style": [{"value": sleeve_type, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "country_of_origin": [{"value": "US", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}],
-                "condition_type": [{"value": "new_new", "marketplace_id": MARKETPLACE_ID}],
-                "batteries_required": [{"value": False, "marketplace_id": MARKETPLACE_ID}],
-                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable", "marketplace_id": MARKETPLACE_ID}],
                 "purchasable_offer": [{
                     "currency": "USD",
                     "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
@@ -151,9 +146,8 @@ def generate_amazon_json_feed(title, image_url):
                     "marketplace_id": MARKETPLACE_ID
                 }]
             }
-        }
-        messages.append(variant_message)
-    
+        })
+
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
