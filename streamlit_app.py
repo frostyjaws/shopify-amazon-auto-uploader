@@ -334,3 +334,44 @@ def download_amazon_processing_report(feed_status, access_token):
     report_res = requests.get(doc_info["url"])
     report_res.raise_for_status()
     return report_res.text
+
+def generate_amazon_json_feed(title, image_url):
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+
+    def format_variation(var):
+        size, color, *sleeve = var.split()
+        sleeve_abbr = "SS" if "Short" in sleeve else "LS"
+        return f"{title}-{size}-{color}-{sleeve_abbr}".replace(" ", "")
+
+    items = []
+    for var in variations:
+        sku = format_variation(var)
+        item = {
+            "sku": sku,
+            "productType": "infant_bodysuit",
+            "attributes": {
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+                "external_product_id": [{"value": sku[:13], "type": "ASIN"}],
+                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
+                "main_image": [{"value": image_url}],
+                "bullet_point": [
+                    {"value": "🎨 High-Quality Ink Printing"},
+                    {"value": "🎖️ Proudly Veteran-Owned"},
+                    {"value": "👶 Comfort and Convenience"},
+                    {"value": "🎁 Perfect Baby Shower Gift"},
+                    {"value": "📏 Versatile Sizing & Colors"}
+                ]
+            }
+        }
+        items.append(item)
+
+    return json.dumps({"feedDocumentType": "POST_PRODUCT_DATA", "items": items}, indent=2)
