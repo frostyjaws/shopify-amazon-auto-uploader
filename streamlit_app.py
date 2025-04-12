@@ -13,7 +13,7 @@ LWA_CLIENT_ID = st.secrets["LWA_CLIENT_ID"]
 LWA_CLIENT_SECRET = st.secrets["LWA_CLIENT_SECRET"]
 REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
 "refresh_token": REFRESH_TOKEN,
-"client_secret": LWA_CLIENT_SECRET
+"client_secret": LWA_CLIENT_SECRET,
 IMGBB_API_KEY = st.secrets["IMGBB_API_KEY"]
 
 def generate_amazon_json_feed(title, image_url):
