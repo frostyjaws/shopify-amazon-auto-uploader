@@ -103,7 +103,7 @@ def generate_amazon_json_feed(title, image_url):
         size = parts[0]
         color = parts[1]
         sleeve = " ".join(parts[2:])
-        sku = f"{safe_title}-{size}-{color}-{sleeve.replace(' ', '')}"
+        sku = f"{color}-{sleeve.replace(' ', '')}-{idx}"
 
         messages.append({
             "messageId": idx,
