@@ -77,17 +77,14 @@ def generate_amazon_json_feed(title, image_url, SELLER_ID):
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
-            "productType": "BABY_ONE_PIECE",
+            "productType": "baby_one_piece",
             "attributes": {
                 "brand": [{"value": "NOFO VIBES"}],
                 "item_name": [{"value": f"{title} - Baby Bodysuit"}],
                 "product_description": [{"value": DESCRIPTION}],
                 "manufacturer": [{"value": "NOFO VIBES"}],
                 "bullet_point": [{"value": b} for b in BULLETS],
-                "main_image_url": [{"value": image_url}],
-                "standard_price": [{"value": "21.99", "currency": "USD"}],
-                "quantity": [{"value": "999"}],
-                "variation_theme": [{"value": "size_name"}],
+                "main_image": [{"value": image_url}],                "variation_theme": [{"value": "size_name"}],
                 "size_name": [{"value": var}]
             }
         })
