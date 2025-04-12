@@ -70,16 +70,7 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
 
 def generate_amazon_json_feed(title, image_url):
     variations = [
-        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-    ]
-
-    def format_variation(var):
+        "Newborn White Short Sleeve"):
         size, color, *sleeve = var.split()
         sleeve_abbr = "SS" if "Short" in sleeve else "LS"
         return f"{title}-{size}-{color}-{sleeve_abbr}".replace(" ", ""), var
@@ -204,7 +195,7 @@ if uploaded_file:
 
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
-            json_feed = generate_amazon_json_feed(file_stem, image_url, SELLER_ID)
+            json_feed = generate_amazon_json_feed(file_stem, image_url)
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
