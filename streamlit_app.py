@@ -243,7 +243,7 @@ if uploaded_file:
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
-            st.code(json_feed, language='json')
+            # st.code(json_feed, language='json')
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
@@ -251,7 +251,7 @@ if uploaded_file:
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
-            # st.code(json.dumps(status, indent=2))
+            st.code(json.dumps(status, indent=2))
 
             if status.get("processingStatus") == "DONE":
                 st.info("Downloading Processing Report...")
