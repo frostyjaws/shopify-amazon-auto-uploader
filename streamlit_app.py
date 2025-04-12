@@ -78,8 +78,7 @@ def clean_variation(var):
     return size, color, sleeve
 
 def generate_amazon_json_feed(title, image_url):
-    title_abbr = abbreviate_title(title)
-    rand_suffix = str(random.randint(1000, 9999))
+    import random
     variations = [
         "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
         "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
@@ -90,32 +89,49 @@ def generate_amazon_json_feed(title, image_url):
         "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
     ]
 
-    messages = [{
+    def abbreviate_title(title):
+        return ''.join([word[0] for word in title.split()][:3]).upper()
+
+    def clean_variation(var):
+        parts = var.split()
+        size = parts[0].replace("-", "")
+        color = parts[1][:3].upper()
+        sleeve = "SS" if "Short" in var else "LS"
+        return size, color, sleeve
+
+    title_abbr = abbreviate_title(title)
+    rand_suffix = str(random.randint(1000, 9999))
+    parent_sku = f"{title_abbr}{rand_suffix}-Parent"
+    messages = []
+
+    # Parent product
+    messages.append({
         "messageId": 1,
         "operationType": "UPSERT",
-        "sku": f"{title_abbr}{rand_suffix}-Parent",
+        "sku": parent_sku,
         "productType": "infant_and_toddler_bodysuits",
         "attributes": {
-            "title": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
-            "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!"}],
+            "item_name": [{"value": f"{title} - Baby Bodysuit"}],
+            "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
             "bullet_point": [
-                {"value": "High-Quality Ink Printing"},
-                {"value": "Proudly Veteran-Owned"},
-                {"value": "Comfort and Convenience"},
-                {"value": "Perfect Baby Shower Gift"},
-                {"value": "Versatile Sizing & Colors"}
+                {"value": "🎨 High-Quality Ink Printing"},
+                {"value": "🎖️ Proudly Veteran-Owned"},
+                {"value": "👶 Comfort and Convenience"},
+                {"value": "🎁 Perfect Baby Shower Gift"},
+                {"value": "🔯 Versatile Sizing & Colors"}
             ],
             "manufacturer": [{"value": "NOFO VIBES"}],
-            "department": [{"value": "unisex-baby"}],
-            "variationTheme": [{"value": "size_name"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": MARKETPLACE_ID
+            }],
+            "variation_theme": [{"name": "size_name", "values": [v for v in variations]}],
             "parentage": [{"value": "parent"}],
             "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}],
-            "batteries_required": [{"value": False}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
+            "condition_type": [{"value": "new_new"}]
         }
-    }]
+    })
 
     for i, var in enumerate(variations):
         size, color, sleeve = clean_variation(var)
@@ -126,35 +142,32 @@ def generate_amazon_json_feed(title, image_url):
             "sku": sku,
             "productType": "infant_and_toddler_bodysuits",
             "attributes": {
-                "title": [{"value": f"{title} - {var}"}],
                 "brand": [{"value": "NOFO VIBES"}],
-                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!"}],
+                "item_name": [{"value": f"{title} - {var}"}],
+                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
                 "bullet_point": [
-                    {"value": "High-Quality Ink Printing"},
-                    {"value": "Proudly Veteran-Owned"},
-                    {"value": "Comfort and Convenience"},
-                    {"value": "Perfect Baby Shower Gift"},
-                    {"value": "Versatile Sizing & Colors"}
+                    {"value": "🎨 High-Quality Ink Printing"},
+                    {"value": "🎖️ Proudly Veteran-Owned"},
+                    {"value": "👶 Comfort and Convenience"},
+                    {"value": "🎁 Perfect Baby Shower Gift"},
+                    {"value": "🔯 Versatile Sizing & Colors"}
                 ],
                 "manufacturer": [{"value": "NOFO VIBES"}],
-                "department": [{"value": "unisex-baby"}],
-                "variationTheme": [{"value": "size_name"}],
+                "main_product_image_locator": [{
+                    "media_location": image_url,
+                    "marketplace_id": MARKETPLACE_ID
+                }],
+                "variation_theme": [{"name": "size_name", "values": [var]}],
                 "parentage": [{"value": "child"}],
-                "parent_sku": [{"value": f"{title_abbr}{rand_suffix}-Parent"}],
-                "size_name": [{"value": var}],
-                "main_image": [{"value": image_url}],
                 "country_of_origin": [{"value": "US"}],
-                "condition_type": [{"value": "new_new"}],
-                "batteries_required": [{"value": False}],
-                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
+                "condition_type": [{"value": "new_new"}]
             }
         })
 
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
-            "version": "2.0",
-            "issueLocale": "en_US"
+            "version": "2.0"
         },
         "messages": messages
     }, indent=2)
