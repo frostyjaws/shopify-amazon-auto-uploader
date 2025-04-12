@@ -177,6 +177,12 @@ if uploaded_file:
 st.info("Checking Amazon feed status...")
         feed_status = check_amazon_feed_status(feed_id, token)
         st.code(json.dumps(feed_status, indent=2))
+if feed_status.get("processingStatus") == "DONE":
+            st.info("Downloading processing report...")
+            report_text = download_amazon_processing_report(feed_status, token)
+            st.code(report_text)
+        else:
+            st.warning("Feed not done processing yet. Please check again later.")
     
             st.success(f"✅ Amazon Feed Submitted! Feed ID: {feed_id}")
         except Exception as e:
@@ -302,3 +308,21 @@ def check_amazon_feed_status(feed_id, access_token):
     res = requests.get(feed_status_url, headers=headers)
     res.raise_for_status()
     return res.json()
+
+
+
+def download_amazon_processing_report(feed_status, access_token):
+    if "resultFeedDocumentId" not in feed_status:
+        return "Processing report not available yet."
+
+    doc_id = feed_status["resultFeedDocumentId"]
+    doc_req = requests.get(
+        f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents/{doc_id}",
+        headers={"x-amz-access-token": access_token}
+    )
+    doc_req.raise_for_status()
+    doc_info = doc_req.json()
+
+    report_res = requests.get(doc_info["url"])
+    report_res.raise_for_status()
+    return report_res.text
