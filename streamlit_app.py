@@ -174,17 +174,18 @@ if uploaded_file:
     
             st.info("Submitting to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
-st.info("Checking Amazon feed status...")
-        feed_status = check_amazon_feed_status(feed_id, token)
-        st.code(json.dumps(feed_status, indent=2))
-if feed_status.get("processingStatus") == "DONE":
-            st.info("Downloading processing report...")
-            report_text = download_amazon_processing_report(feed_status, token)
-            st.code(report_text)
-        else:
-            st.warning("Feed not done processing yet. Please check again later.")
-    
             st.success(f"✅ Amazon Feed Submitted! Feed ID: {feed_id}")
+    
+            st.info("Checking Amazon feed status...")
+            feed_status = check_amazon_feed_status(feed_id, token)
+            st.code(json.dumps(feed_status, indent=2))
+    
+            if feed_status.get("processingStatus") == "DONE":
+                st.info("Downloading processing report...")
+                report_text = download_amazon_processing_report(feed_status, token)
+                st.code(report_text)
+            else:
+                st.warning("Feed not done processing yet. Please check again later.")
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
