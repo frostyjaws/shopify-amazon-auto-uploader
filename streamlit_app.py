@@ -84,10 +84,12 @@ def generate_amazon_json_feed(title, image_url):
         sleeve_abbr = "SS" if "Short" in sleeve else "LS"
         return f"{title}-{size}-{color}-{sleeve_abbr}".replace(" ", ""), var
 
-    items = []
-    for var in variations:
+    messages = []
+    for i, var in enumerate(variations):
         sku, size_label = format_variation(var)
-        item = {
+        message = {
+            "messageId": i + 1,
+            "operationType": "UPSERT",
             "sku": sku,
             "productType": "baby_one_piece",
             "attributes": {
@@ -111,14 +113,14 @@ def generate_amazon_json_feed(title, image_url):
                 "size_name": [{"value": size_label}]
             }
         }
-        items.append(item)
+        messages.append(message)
 
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
             "version": "2.0"
         },
-        "items": items
+        "messages": messages
     }, indent=2)
 
 
