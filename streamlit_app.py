@@ -169,10 +169,15 @@ def clean_variation(var):
 
 
 def get_amazon_access_token():
-    r = requests.post("https://api.amazon.com/auth/o2/token", data={
-        "grant_type": "refresh_token",
-        "client_id": LWA_CLIENT_ID,
-    })
+    r = requests.post(
+        "https://api.amazon.com/auth/o2/token",
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": REFRESH_TOKEN,
+            "client_id": LWA_CLIENT_ID,
+            "client_secret": LWA_CLIENT_SECRET
+        }
+    )
     r.raise_for_status()
     return r.json()["access_token"]
 
