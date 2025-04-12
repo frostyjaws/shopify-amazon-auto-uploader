@@ -79,7 +79,25 @@ def generate_amazon_json_feed(title, image_url, SELLER_ID):
             "operationType": "UPDATE",
             "productType": "baby_one_piece",
             "attributes": {
-                "brand": [{"value": "NOFO VIBES"}],
+    "brand": [{"value": "NOFO VIBES"}],
+    "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+    "manufacturer": [{"value": "NOFO VIBES"}],
+    "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
+    "main_image": [{"value": image_url}],
+    "bullet_point": [
+        {"value": "🎨 High-Quality Ink Printing"},
+        {"value": "🎖️ Proudly Veteran-Owned"},
+        {"value": "👶 Comfort and Convenience"},
+        {"value": "🎁 Perfect Baby Shower Gift"},
+        {"value": "📏 Versatile Sizing & Colors"}
+    ],
+    "product_site_launch_date": [{"value": "2023-01-01"}],
+    "country_of_origin": [{"value": "US"}],
+    "department": [{"value": "baby-boys"}],
+    "parentage": [{"value": "child"}],
+    "variation_theme": [{"value": "size_name"}],
+    "size_name": [{"value": var}]
+}],
                 "item_name": [{"value": f"{title} - Baby Bodysuit"}],
                 "product_description": [{"value": DESCRIPTION}],
                 "manufacturer": [{"value": "NOFO VIBES"}],
