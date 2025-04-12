@@ -127,7 +127,7 @@ def generate_amazon_json_feed(title, image_url):
         items.append(item)
 
     return json.dumps({
-        "feedType": "POST_PRODUCT_DATA",
+        "feedType": "JSON_LISTINGS_FEED",
         "marketplaceIds": [MARKETPLACE_ID],
         "items": items
     }, indent=2)
@@ -155,7 +155,7 @@ def submit_amazon_json_feed(json_feed, access_token):
             "Content-Type": "application/json"
         },
         json={
-            "feedType": "POST_PRODUCT_DATA",
+            "feedType": "JSON_LISTINGS_FEED",
             "marketplaceIds": [MARKETPLACE_ID],
             "inputFeedDocumentId": doc["feedDocumentId"]
         }
