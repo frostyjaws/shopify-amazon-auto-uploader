@@ -164,9 +164,9 @@ if uploaded_file:
 
     if st.button("📤 Submit to Shopify + Amazon"):
         try:
-            image_bytes = uploaded_file.read()
+            uploaded_file.seek(0)
             st.info("Uploading image and creating Shopify product...")
-            cdn_url = upload_and_create_shopify_product(image_bytes, handle, title_full)
+            cdn_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 
             st.info("Generating Amazon flat file...")
             token = get_amazon_access_token()
