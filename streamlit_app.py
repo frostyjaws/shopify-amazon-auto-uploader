@@ -251,3 +251,39 @@ def generate_amazon_json_feed(title, image_url):
         feed_data.append(child_product)
 
     return json.dumps(feed_data, indent=2)
+
+
+
+def submit_amazon_json_feed(json_feed, access_token):
+    # Step 1: Request a document upload URL
+    doc_req = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+        headers={
+            "x-amz-access-token": access_token,
+            "Content-Type": "application/json"
+        },
+        json={"contentType": "application/json"}
+    )
+    doc_req.raise_for_status()
+    doc = doc_req.json()
+
+    # Step 2: Upload the JSON feed to the document URL
+    upload_headers = {"Content-Type": "application/json"}
+    upload_res = requests.put(doc["url"], data=json_feed.encode("utf-8"), headers=upload_headers)
+    upload_res.raise_for_status()
+
+    # Step 3: Submit the feed using the uploaded document
+    feed_req = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+        headers={
+            "x-amz-access-token": access_token,
+            "Content-Type": "application/json"
+        },
+        json={
+            "feedType": "POST_PRODUCT_DATA",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "inputFeedDocumentId": doc["feedDocumentId"]
+        }
+    )
+    feed_req.raise_for_status()
+    return feed_req.json()["feedId"]
