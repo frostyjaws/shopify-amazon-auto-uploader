@@ -214,6 +214,63 @@ def download_amazon_processing_report(feed_status, access_token):
     report.raise_for_status()
     return report.text
 
+
+def generate_inventory_feed_json(title, seller_id):
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+    def abbreviate_title(title):
+        return ''.join([word[0] for word in title.split()][:3]).upper()
+    title_abbr = abbreviate_title(title)
+    rand_suffix = "2847"
+    messages = []
+    for i, var in enumerate(variations):
+        parts = var.split()
+        size = parts[0].replace("-", "")
+        color = parts[1][:3].upper()
+        sleeve = "SS" if "Short" in var else "LS"
+        sku = f"{title_abbr}{rand_suffix}-{size}-{color}-{sleeve}"
+        messages.append({
+            "messageId": i + 1,
+            "operationType": "UPDATE",
+            "sku": sku,
+            "quantity": {"value": 999}
+        })
+    return {
+        "header": {"sellerId": seller_id, "version": "2.0"},
+        "messages": messages
+    }
+
+def submit_inventory_feed(inventory_feed, access_token):
+    doc_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+        json={"contentType": "application/json"}
+    )
+    doc_res.raise_for_status()
+    doc = doc_res.json()
+    upload = requests.put(doc["url"], data=json.dumps(inventory_feed).encode("utf-8"),
+                          headers={"Content-Type": "application/json"})
+    upload.raise_for_status()
+    feed_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+        json={
+            "feedType": "POST_INVENTORY_AVAILABILITY_DATA",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "inputFeedDocumentId": doc["feedDocumentId"]
+        }
+    )
+    feed_res.raise_for_status()
+    return feed_res.json()["feedId"]
+
+
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
@@ -242,6 +299,10 @@ if uploaded_file:
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+            st.info("📦 Submitting Inventory Feed...")
+            inventory_json = generate_inventory_feed_json(file_stem.replace("-", " "), SELLER_ID)
+            inventory_feed_id = submit_inventory_feed(inventory_json, token)
+            st.success(f"✅ Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
