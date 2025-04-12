@@ -167,14 +167,17 @@ if uploaded_file:
             uploaded_file.seek(0)
             st.info("Uploading image and creating Shopify product...")
             cdn_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
-
-            st.info("Generating Amazon flat file...")
+    
+            st.info("Generating Amazon JSON feed...")
             token = get_amazon_access_token()
-            feed = generate_amazon_feed(file_stem, cdn_url)
-
+            json_feed = generate_amazon_json_feed(file_stem, cdn_url)
+    
             st.info("Submitting to Amazon...")
-            feed_id = submit_amazon_feed(feed, token)
-
+            feed_id = submit_amazon_json_feed(json_feed, token)
+st.info("Checking Amazon feed status...")
+        feed_status = check_amazon_feed_status(feed_id, token)
+        st.code(json.dumps(feed_status, indent=2))
+    
             st.success(f"✅ Amazon Feed Submitted! Feed ID: {feed_id}")
         except Exception as e:
             st.error(f"❌ Error: {e}")
@@ -287,3 +290,15 @@ def submit_amazon_json_feed(json_feed, access_token):
     )
     feed_req.raise_for_status()
     return feed_req.json()["feedId"]
+
+
+
+def check_amazon_feed_status(feed_id, access_token):
+    feed_status_url = f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}"
+    headers = {
+        "x-amz-access-token": access_token,
+        "Content-Type": "application/json"
+    }
+    res = requests.get(feed_status_url, headers=headers)
+    res.raise_for_status()
+    return res.json()
