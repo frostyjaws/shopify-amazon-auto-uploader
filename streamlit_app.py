@@ -136,6 +136,7 @@ def get_amazon_access_token():
 
 
 def submit_amazon_json_feed(json_feed, access_token):
+    import time
     doc_res = requests.post(
         "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
         headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
@@ -147,17 +148,23 @@ def submit_amazon_json_feed(json_feed, access_token):
     upload = requests.put(doc["url"], data=json_feed.encode("utf-8"), headers={"Content-Type": "application/json"})
     upload.raise_for_status()
 
-    feed_res = requests.post(
-        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
-        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
-        json={
-            "feedType": "JSON_LISTINGS_FEED",
-            "marketplaceIds": [MARKETPLACE_ID],
-            "inputFeedDocumentId": doc["feedDocumentId"]
-        }
-    )
-    feed_res.raise_for_status()
-    return feed_res.json()["feedId"]
+    for attempt in range(3):
+        feed_res = requests.post(
+            "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+            headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+            json={
+                "feedType": "JSON_LISTINGS_FEED",
+                "marketplaceIds": [MARKETPLACE_ID],
+                "inputFeedDocumentId": doc["feedDocumentId"]
+            }
+        )
+        if feed_res.status_code == 429:
+            st.warning("⚠️ Rate limit hit. Waiting 10 seconds before retrying...")
+            time.sleep(10)
+        else:
+            feed_res.raise_for_status()
+            return feed_res.json()["feedId"]
+    raise Exception("Feed submission failed after 3 attempts due to rate limiting.")
 
 
 def check_amazon_feed_status(feed_id, access_token):
