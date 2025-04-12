@@ -67,10 +67,12 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return image_url
 
 def generate_amazon_json_feed(title, image_url):
+    safe_title = title.replace(" ", "-").replace("_", "-")
+
     messages = [
         {
             "messageId": 1,
-            "sku": f"{title}-PARENT",
+            "sku": f"{safe_title}-PARENT",
             "operationType": "UPDATE",
             "productType": "LEOTARD",
             "requirements": "LISTING",
@@ -101,7 +103,7 @@ def generate_amazon_json_feed(title, image_url):
         size = parts[0]
         color = parts[1]
         sleeve = " ".join(parts[2:])
-        sku = f"{title}-{size}-{color}-{sleeve.replace(' ', '')}"
+        sku = f"{safe_title}-{size}-{color}-{sleeve.replace(' ', '')}"
 
         messages.append({
             "messageId": idx,
@@ -121,7 +123,7 @@ def generate_amazon_json_feed(title, image_url):
                 "department": [{"value": "girls"}],
                 "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
                 "parentage_level": [{"value": "child"}],
-                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{title}-PARENT"}],
+                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{safe_title}-PARENT"}],
                 "model_number": [{"value": f"{title}"}],
                 "size_name": [{"value": size}],
                 "color": [{"value": color}],
@@ -241,13 +243,15 @@ if uploaded_file:
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
+            st.code(json_feed, language='json')
+
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
-            st.code(json.dumps(status, indent=2))
+            # st.code(json.dumps(status, indent=2))
 
             if status.get("processingStatus") == "DONE":
                 st.info("Downloading Processing Report...")
