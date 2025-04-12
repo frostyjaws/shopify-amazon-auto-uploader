@@ -125,7 +125,7 @@ def generate_amazon_json_feed(title, image_url):
                 "parentage_level": [{"value": "child"}],
                 "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{safe_title}-PARENT"}],
                 "model_number": [{"value": f"{title}"}],
-                "size_name": [{"value": size}],
+                "size": [{"value": size}],
                 "color": [{"value": color}],
                 "model_name": [{"value": "Classic Fit"}],
                 "style": [{"value": sleeve}],
