@@ -9,6 +9,11 @@ from io import BytesIO
 # === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
 SHOPIFY_STORE = st.secrets["SHOPIFY_STORE"]
+LWA_CLIENT_ID = st.secrets["LWA_CLIENT_ID"]
+LWA_CLIENT_SECRET = st.secrets["LWA_CLIENT_SECRET"]
+REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
+"refresh_token": REFRESH_TOKEN,
+"client_secret": LWA_CLIENT_SECRET
 IMGBB_API_KEY = st.secrets["IMGBB_API_KEY"]
 
 def generate_amazon_json_feed(title, image_url):
@@ -97,9 +102,6 @@ def generate_amazon_json_feed(title, image_url):
     return json.dumps({
 
 
-LWA_CLIENT_ID = st.secrets["LWA_CLIENT_ID"]
-LWA_CLIENT_SECRET = st.secrets["LWA_CLIENT_SECRET"]
-REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
 MARKETPLACE_ID = st.secrets["MARKETPLACE_ID"]
 SELLER_ID = st.secrets["SELLER_ID"]
 
@@ -169,9 +171,7 @@ def clean_variation(var):
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
         "grant_type": "refresh_token",
-        "refresh_token": REFRESH_TOKEN,
         "client_id": LWA_CLIENT_ID,
-        "client_secret": LWA_CLIENT_SECRET
     })
     r.raise_for_status()
     return r.json()["access_token"]
