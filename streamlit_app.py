@@ -96,8 +96,13 @@ def generate_amazon_json_feed(title, image_url):
         }
     ]
 
-    for idx, (size, color, sleeve) in enumerate(VARIATIONS, start=2):
+    for idx, variation in enumerate(VARIATIONS, start=2):
+        parts = variation.split()
+        size = parts[0]
+        color = parts[1]
+        sleeve = " ".join(parts[2:])
         sku = f"{title}-{size}-{color}-{sleeve.replace(' ', '')}"
+
         messages.append({
             "messageId": idx,
             "sku": sku,
@@ -105,10 +110,10 @@ def generate_amazon_json_feed(title, image_url):
             "productType": "LEOTARD",
             "requirements": "LISTING",
             "attributes": {
-                "item_name": [{"value": f"Girls' Leotard - {size} {color} {sleeve}"}],
+                "item_name": [{"value": f"Girls' Leotard - {variation}"}],
                 "brand": [{"value": "NOFO VIBES"}],
                 "item_type_keyword": [{"value": "bodysuits"}],
-                "product_description": [{"value": f"Baby Leotard - {size} {color} {sleeve} - {DESCRIPTION}"}],
+                "product_description": [{"value": f"Baby Leotard - {variation} - {DESCRIPTION}"}],
                 "bullet_point": [{"value": b} for b in BULLETS[:2]],
                 "target_gender": [{"value": "female"}],
                 "age_range_description": [{"value": "child"}],
