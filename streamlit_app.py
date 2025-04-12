@@ -80,13 +80,20 @@ DESCRIPTION = "<p>Celebrate the arrival of your little one with a beautifully pr
 
 
 def get_amazon_access_token():
-    r = requests.post("https://api.amazon.com/auth/o2/token", data={
-        "grant_type": "refresh_token",
-        "refresh_token": REFRESH_TOKEN,
-        "client_id": LWA_CLIENT_ID,
-        "client_secret": LWA_CLIENT_SECRET
-    })
-    return r.json()["access_token"]
+        r = requests.post("https://api.amazon.com/auth/o2/token", data={
+            "grant_type": "refresh_token",
+            "refresh_token": REFRESH_TOKEN,
+            "client_id": LWA_CLIENT_ID,
+            "client_secret": LWA_CLIENT_SECRET
+        })
+        try:
+            r.raise_for_status()
+            token_response = r.json()
+            st.write("✅ Token Response:", token_response)
+            return token_response["access_token"]
+        except Exception as e:
+            st.error(f"❌ Token Request Failed: {r.status_code} - {r.text}")
+            raise
 
 def generate_amazon_feed(title, image_url):
     variations = [
