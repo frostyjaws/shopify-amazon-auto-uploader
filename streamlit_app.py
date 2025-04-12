@@ -69,71 +69,60 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
 
 
 def generate_amazon_json_feed(title, image_url):
+    variations = [
+        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+
+    def format_variation(var):
+        size, color, *sleeve = var.split()
+        sleeve_abbr = "SS" if "Short" in sleeve else "LS"
+        return f"{title}-{size}-{color}-{sleeve_abbr}".replace(" ", ""), var
+
     messages = []
-    for idx, var in enumerate(VARIATIONS, start=1):
-        abbr = "SS" if "Short" in var else "LS"
-        sku = f"{title}-{var.replace(' ', '')}-{abbr}"
-        messages.append({
-            "messageId": idx,
+    for i, var in enumerate(variations):
+        sku, size_label = format_variation(var)
+        message = {
+            "messageId": i + 1,
+            "operationType": "UPSERT",
             "sku": sku,
-            "operationType": "UPDATE",
-            "productType": "BABY_ONE_PIECE",
-            "requirements": "LISTING",
+            "productType": "infant_and_toddler_bodysuits",
             "attributes": {
-                "condition_type": [
-                    {"value": "new_new", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "item_name": [
-                    {"value": f"{title} - Baby Bodysuit", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "brand": [
-                    {"value": "NOFO VIBES", "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "product_description": [
-                    {"value": DESCRIPTION, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID}
-                ],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+                "manufacturer": [{"value": "NOFO VIBES"}],
+                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
+                "main_image": [{"value": image_url}],
                 "bullet_point": [
-                    {"value": b, "language_tag": "en_US", "marketplace_id": MARKETPLACE_ID} for b in BULLETS
+                    {"value": "🎨 High-Quality Ink Printing"},
+                    {"value": "🎖️ Proudly Veteran-Owned"},
+                    {"value": "👶 Comfort and Convenience"},
+                    {"value": "🎁 Perfect Baby Shower Gift"},
+                    {"value": "📏 Versatile Sizing & Colors"}
                 ],
-                "main_product_image_locator": [
-                    {"media_location": image_url, "marketplace_id": MARKETPLACE_ID}
-                ],
-                "purchasable_offer": [
-                    {
-                        "currency": "USD",
-                        "our_price": [
-                            {
-                                "schedule": [
-                                    {"value_with_tax": 21.99}
-                                ]
-                            }
-                        ],
-                        "marketplace_id": MARKETPLACE_ID
-                    }
-                ],
-                "fulfillment_availability": [
-                    {
-                        "quantity": 999,
-                        "fulfillment_channel_code": "DEFAULT",
-                        "marketplace_id": MARKETPLACE_ID
-                    }
-                ],
-                "variation_theme": [
-                    {"value": "size_name", "marketplace_id": MARKETPLACE_ID}
-                ],
-                "size_name": [
-                    {"value": var, "marketplace_id": MARKETPLACE_ID}
-                ]
+                "product_site_launch_date": [{"value": "2023-01-01"}],
+                "country_of_origin": [{"value": "US"}],
+                "department": [{"value": "baby-boys"}],
+                "parentage": [{"value": "child"}],
+                "variation_theme": [{"value": "size_name"}],
+                "size_name": [{"value": size_label}]
             }
-        })
+        }
+        messages.append(message)
+
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
-            "version": "2.0",
-            "issueLocale": "en_US"
+            "version": "2.0"
         },
         "messages": messages
     }, indent=2)
+
 
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
@@ -144,6 +133,7 @@ def get_amazon_access_token():
     })
     r.raise_for_status()
     return r.json()["access_token"]
+
 
 def submit_amazon_json_feed(json_feed, access_token):
     doc_res = requests.post(
@@ -169,6 +159,7 @@ def submit_amazon_json_feed(json_feed, access_token):
     feed_res.raise_for_status()
     return feed_res.json()["feedId"]
 
+
 def check_amazon_feed_status(feed_id, access_token):
     res = requests.get(
         f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}",
@@ -176,6 +167,7 @@ def check_amazon_feed_status(feed_id, access_token):
     )
     res.raise_for_status()
     return res.json()
+
 
 def download_amazon_processing_report(feed_status, access_token):
     doc_id = feed_status.get("resultFeedDocumentId")
@@ -190,6 +182,7 @@ def download_amazon_processing_report(feed_status, access_token):
     report = requests.get(doc_info["url"])
     report.raise_for_status()
     return report.text
+
 
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
