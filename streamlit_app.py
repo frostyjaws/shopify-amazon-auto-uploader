@@ -163,7 +163,7 @@ def generate_amazon_json_feed(title, image_url):
                 "brand": [{"value": "NOFO VIBES"}],
                 "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
                 "product_description": [{"value": DESCRIPTION}],
-                "bullet_point": [{"value": b} for b in BULLETS[:2]],
+                "bullet_point": [{"value": b} for b in BULLETS],
                 "target_gender": [{"value": "female"}],
                 "age_range_description": [{"value": "Infant"}],
                 "material": [{"value": "Cotton"}, {"value": "Spandex"}],
