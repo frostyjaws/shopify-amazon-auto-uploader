@@ -144,7 +144,7 @@ def generate_amazon_json_feed(title, image_url):
                     "child_relationship_type": "variation",
                     "parent_sku": parent_sku
                 }],
-                "size_name": [{"value": variation}],
+                "size": [{"value": variation}],
                 "model_number": [{"value": title}],
                 "style": [{"value": "Classic Fit"}],
                 "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
