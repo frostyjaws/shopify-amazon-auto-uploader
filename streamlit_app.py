@@ -311,7 +311,7 @@ if uploaded_file:
             uploaded_file.seek(0)
             image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 
-            st.success("✅ Shopify Product Created")
+            sst.success("✅ Shopify Product Created")
 
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
@@ -381,8 +381,8 @@ if uploaded_file:
 
             xml_string = generate_image_feed_xml(f"{slug}-PARENT", ACCESSORY_IMAGES)
             image_feed_id = submit_image_feed(xml_string, token)
-            st.success(f"📸 Accessory Images Submitted — Feed ID: {image_feed_id}")
-t.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+            sst.success(f"📸 Accessory Images Submitted — Feed ID: {image_feed_id}")
+st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
