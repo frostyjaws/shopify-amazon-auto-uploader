@@ -84,7 +84,7 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "child"}],
             "material": [{"value": "polyester"}, {"value": "spandex"}],
             "department": [{"value": "girls"}],
-            "variation_theme": [{"name": "size_name"}],
+            "variation_theme": [{"name": "SIZE_NAME"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": title}],
             "country_of_origin": [{"value": "CN"}],
@@ -116,7 +116,7 @@ def generate_amazon_json_feed(title, image_url):
                 "age_range_description": [{"value": "child"}],
                 "material": [{"value": "polyester"}, {"value": "spandex"}],
                 "department": [{"value": "girls"}],
-                "variation_theme": [{"name": "size_name"}],
+                "variation_theme": [{"name": "SIZE_NAME"}],
                 "parentage_level": [{"value": "child"}],
                 "child_parent_sku_relationship": [{
                     "child_relationship_type": "variation",
