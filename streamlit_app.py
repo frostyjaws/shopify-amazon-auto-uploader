@@ -153,7 +153,7 @@ def generate_amazon_json_feed(title, image_url):
 
     return json.dumps({
         "header": {
-            "sellerId": "YOUR_SELLER_ID",  # Replace dynamically if needed
+            "sellerId": SELLER_ID,
             "version": "2.0",
             "issueLocale": "en_US"
         },
