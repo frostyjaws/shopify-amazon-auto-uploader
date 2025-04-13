@@ -85,6 +85,8 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
 
 def generate_amazon_json_feed(title, image_url):
     import random
+    import json
+
     variations = [
         "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
         "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
@@ -118,6 +120,7 @@ def generate_amazon_json_feed(title, image_url):
 
     slug = format_slug(title)
     parent_sku = f"{slug}-PARENT"
+
     messages = [{
         "messageId": 1,
         "sku": parent_sku,
@@ -143,8 +146,8 @@ def generate_amazon_json_feed(title, image_url):
             "condition_type": [{"value": "new_new"}],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],            
-            "supplier_declared_has_product_identifier_exemption": [{"value": True }]            
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
         }
     }]
 
@@ -152,64 +155,80 @@ def generate_amazon_json_feed(title, image_url):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
 
+        other_product_images = {
+            f"other_product_image_locator_{i+1}": [{
+                "media_location": [
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
+                ][i],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }] for i in range(5)
+        }
+
+        attributes = {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material": [{"value": "Cotton"}, {"value": "Spandex"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "child"}],
+            "child_parent_sku_relationship": [{
+                "child_relationship_type": "variation",
+                "parent_sku": parent_sku
+            }],
+            "size": [{"value": variation}],
+            "style": [{"value": sleeve_type}],
+            "model_number": [{"value": "CrewNeckBodysuit"}],
+            "model_name": [{"value": "Crew Neck Bodysuit"}],
+            "import_designation": [{"value": "Made in USA"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+            "care_instructions": [{"value": "Machine Wash"}],
+            "sleeve": [{"value": sleeve_type}],
+            "color": [{"value": "multi"}],
+            "list_price": [{"currency": "USD", "value": 19.99}],
+            "item_package_dimensions": [{
+                "length": {"value": 25.4, "unit": "centimeters"},
+                "width": {"value": 20.32, "unit": "centimeters"},
+                "height": {"value": 2.54, "unit": "centimeters"}
+            }],
+            "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            **other_product_images,
+            "purchasable_offer": [{
+                "currency": "USD",
+                "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            "fulfillment_availability": [{
+                "quantity": 999,
+                "fulfillment_channel_code": "DEFAULT",
+                "marketplace_id": "ATVPDKIKX0DER"
+            }]
+        }
+
         messages.append({
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "LEOTARD",
             "requirements": "LISTING",
-            "attributes": {
-                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-                "brand": [{"value": "NOFO VIBES"}],
-                "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
-                "product_description": [{"value": DESCRIPTION}],
-                "bullet_point": [{"value": b} for b in BULLETS],
-                "target_gender": [{"value": "female"}],
-                "age_range_description": [{"value": "Infant"}],
-                "material": [{"value": "Cotton"}, {"value": "Spandex"}],
-                "department": [{"value": "Baby Girls"}],
-                "variation_theme": [{"name": "SIZE/COLOR"}],
-                "parentage_level": [{"value": "child"}],
-                "child_parent_sku_relationship": [{
-                    "child_relationship_type": "variation",
-                    "parent_sku": parent_sku
-                }],
-                "size": [{"value": variation}],
-                "style": [{"value": sleeve_type}],
-                "model_number": [{"value": "CrewNeckBodysuit"}],
-                "model_name": [{"value": "Crew Neck Bodysuit"}],
-                "import_designation": [{"value": "Made in USA"}],
-                "country_of_origin": [{"value": "US"}],
-                "condition_type": [{"value": "new_new"}],
-                "batteries_required": [{"value": False}],
-                "fabric_type": [{"value": "100% cotton"}],
-                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],          
-                "supplier_declared_has_product_identifier_exemption": [{"value": True }],
-                "care_instructions": [{"value": "Machine Wash"}],
-                "sleeve": [{"value": sleeve_type}],
-                "color": [{"value": "multi"}],
-                "list_price": [{"currency": "USD", "value": 19.99}],
-                "item_package_dimensions": [{
-                    "length": {"value": 25.4, "unit": "centimeters"},
-                    "width": {"value": 20.32, "unit": "centimeters"},
-                    "height": {"value": 2.54, "unit": "centimeters"}
-                }],
-                "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
-                "main_product_image_locator": [{
-                    "media_location": image_url,
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }],
-                "purchasable_offer": [{
-                    "currency": "USD",
-                    "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }],
-                "fulfillment_availability": [{
-                    "quantity": 999,
-                    "fulfillment_channel_code": "DEFAULT",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }]
-            }
+            "attributes": attributes
         })
 
     return json.dumps({
@@ -220,7 +239,6 @@ def generate_amazon_json_feed(title, image_url):
         },
         "messages": messages
     }, indent=2)
-
 
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
