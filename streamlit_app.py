@@ -1,8 +1,8 @@
-# streamlit_app.py
 import streamlit as st
 import requests
 import os
 import json
+import base64
 from PIL import Image
 from io import BytesIO
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -41,13 +41,15 @@ if uploaded_file:
     if st.button("📤 Submit to Shopify + Amazon"):
         try:
             st.info("Uploading to ImgBB + Creating product on Shopify...")
+            uploaded_file.seek(0)
+            image_data = base64.b64encode(uploaded_file.read()).decode("utf-8")
             imgbb_url = "https://api.imgbb.com/1/upload"
-            files = {
-                "key": (None, IMGBB_API_KEY),
-                "name": (None, handle),
-                "image": uploaded_file
+            payload = {
+                "key": IMGBB_API_KEY,
+                "image": image_data,
+                "name": handle
             }
-            response = requests.post(imgbb_url, files=files)
+            response = requests.post(imgbb_url, data=payload)
             response.raise_for_status()
             image_url = response.json()["data"]["url"]
 
@@ -135,36 +137,6 @@ if uploaded_file:
                 SubElement(header, "MerchantIdentifier").text = SELLER_ID
                 SubElement(envelope, "MessageType").text = "ProductImage"
 
-                for i, url in enumerate(image_urls):
-                    message = SubElement(envelope, "Message")
-                    SubElement(message, "MessageID").text = str(i + 1)
-                    SubElement(message, "OperationType").text = "Update"
-                    image = SubElement(message, "ProductImage")
-                    SubElement(image, "SKU").text = f"{file_stem.upper()}-PARENT"
-                    SubElement(image, "ImageType").text = f"PT{i+1}"
-                    SubElement(image, "ImageLocation").text = url
-
-                return minidom.parseString(tostring(envelope, "utf-8")).toprettyxml(indent="  ")
-
-            image_xml = generate_image_feed_xml(f"{file_stem.upper()}-PARENT", ACCESSORY_IMAGES)
-            doc_img = requests.post(
-                "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
-                headers={"x-amz-access-token": token, "Content-Type": "application/json"},
-                json={"contentType": "text/xml; charset=UTF-8"}
-            ).json()
-            requests.put(doc_img["url"], data=image_xml.encode("utf-8"),
-                         headers={"Content-Type": "text/xml; charset=UTF-8"}).raise_for_status()
-            image_feed_res = requests.post(
-                "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
-                headers={"x-amz-access-token": token, "Content-Type": "application/json"},
-                json={
-                    "feedType": "POST_PRODUCT_IMAGE_DATA",
-                    "marketplaceIds": [MARKETPLACE_ID],
-                    "inputFeedDocumentId": doc_img["feedDocumentId"]
-                }
-            )
-            image_feed_id = image_feed_res.json()["feedId"]
-            st.success(f"📸 Accessory Images Submitted — Feed ID: {image_feed_id}")
-
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
+                for i, url in enumerate(image_urls
+::contentReference[oaicite:0]{index=0}
+ 
