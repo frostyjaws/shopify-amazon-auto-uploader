@@ -64,7 +64,9 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     }
     r = requests.post(shopify_url, json=payload, headers=headers)
     r.raise_for_status()
-    return image_url
+    shopify_product = r.json()
+    shopify_image_url = shopify_product["product"]["images"][0]["src"]
+    return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
     import random
