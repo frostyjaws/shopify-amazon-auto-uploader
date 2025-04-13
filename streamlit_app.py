@@ -67,43 +67,38 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return image_url
 
 def generate_amazon_json_feed(title, image_url):
-    safe_title = title.replace(" ", "-").replace("_", "-")
-
-    messages = [
-        {
-            "messageId": 1,
-            "sku": f"{safe_title}-PARENT",
-            "operationType": "UPDATE",
-            "productType": "LEOTARD",
-            "requirements": "LISTING",
-            "attributes": {
-                "item_name": [{"value": "Girls' Gymnastics Leotard"}],
-                "brand": [{"value": "NOFO VIBES"}],
-                "item_type_keyword": [{"value": "bodysuits"}],
-                "product_description": [{"value": DESCRIPTION}],
-                "bullet_point": [{"value": b} for b in BULLETS],
-                "target_gender": [{"value": "female"}],
-                "age_range_description": [{"value": "child"}],
-                "material": [{"value": "polyester"}, {"value": "spandex"}],
-                "department": [{"value": "girls"}],
-                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
-                "parentage_level": [{"value": "parent"}],
-                "model_number": [{"value": f"{title}"}],
-                "country_of_origin": [{"value": "CN"}],
-                "condition_type": [{"value": "new_new"}],
-                "batteries_required": [{"value": False}],
-                "fabric_type": [{"value": "100% cotton"}],
-                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
-            }
+    parent_sku = f"{title}-PARENT"
+    messages = [{
+        "messageId": 1,
+        "sku": parent_sku,
+        "operationType": "UPDATE",
+        "productType": "LEOTARD",
+        "requirements": "LISTING",
+        "attributes": {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "child"}],
+            "material": [{"value": "polyester"}, {"value": "spandex"}],
+            "department": [{"value": "girls"}],
+            "variation_theme": [{"name": "size_name"}],
+            "parentage_level": [{"value": "parent"}],
+            "model_number": [{"value": title}],
+            "country_of_origin": [{"value": "CN"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
         }
-    ]
+    }]
 
     for idx, variation in enumerate(VARIATIONS, start=2):
-        parts = variation.split()
-        size = parts[0]
-        color = parts[1]
-        sleeve = " ".join(parts[2:])
-        sku = f"{color}-{sleeve.replace(' ', '')}-{idx}"
+        size = variation
+        abbr = "SS" if "Short" in size else "LS"
+        sku = f"{title}-{size.replace(' ', '')}-{abbr}"
 
         messages.append({
             "messageId": idx,
@@ -112,52 +107,53 @@ def generate_amazon_json_feed(title, image_url):
             "productType": "LEOTARD",
             "requirements": "LISTING",
             "attributes": {
-                "item_name": [{"value": f"Girls' Leotard - {variation}"}],
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
                 "brand": [{"value": "NOFO VIBES"}],
                 "item_type_keyword": [{"value": "bodysuits"}],
-                "product_description": [{"value": f"Baby Leotard - {variation} - {DESCRIPTION}"}],
+                "product_description": [{"value": DESCRIPTION}],
                 "bullet_point": [{"value": b} for b in BULLETS[:2]],
                 "target_gender": [{"value": "female"}],
                 "age_range_description": [{"value": "child"}],
                 "material": [{"value": "polyester"}, {"value": "spandex"}],
                 "department": [{"value": "girls"}],
-                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
+                "variation_theme": [{"name": "size_name"}],
                 "parentage_level": [{"value": "child"}],
-                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{safe_title}-PARENT"}],
-                "model_number": [{"value": f"{title}"}],
-                "size": [{"value": size}],
-                "color": [{"value": color}],
-                "model_name": [{"value": "Classic Fit"}],
-                "style": [{"value": sleeve}],
+                "child_parent_sku_relationship": [{
+                    "child_relationship_type": "variation",
+                    "parent_sku": parent_sku
+                }],
+                "size_name": [{"value": size}],
+                "model_number": [{"value": title}],
+                "style": [{"value": "Classic Fit"}],
                 "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
-                "merchant_suggested_asin": [{"value": "B07D3NM8X3"}],
                 "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
-                "item_package_dimensions": [{"length": {"value": 25.4, "unit": "centimeters"}, "width": {"value": 20.32, "unit": "centimeters"}, "height": {"value": 2.54, "unit": "centimeters"}}],
+                "item_package_dimensions": [{
+                    "length": {"value": 25.4, "unit": "centimeters"},
+                    "width": {"value": 20.32, "unit": "centimeters"},
+                    "height": {"value": 2.54, "unit": "centimeters"}
+                }],
                 "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
                 "list_price": [{"currency": "USD", "value": 19.99}],
-                "import_designation": [{"value": "imported"}],
-                "country_of_origin": [{"value": "CN"}],
-                "condition_type": [{"value": "new_new"}],
-                "batteries_required": [{"value": False}],
-                "fabric_type": [{"value": "100% cotton"}],
-                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-                "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
+                "main_product_image_locator": [{
+                    "media_location": image_url,
+                    "marketplace_id": "ATVPDKIKX0DER"  # Replace with your actual MARKETPLACE_ID if dynamic
+                }],
                 "purchasable_offer": [{
                     "currency": "USD",
                     "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
-                    "marketplace_id": MARKETPLACE_ID
+                    "marketplace_id": "ATVPDKIKX0DER"
                 }],
                 "fulfillment_availability": [{
                     "quantity": 999,
                     "fulfillment_channel_code": "DEFAULT",
-                    "marketplace_id": MARKETPLACE_ID
+                    "marketplace_id": "ATVPDKIKX0DER"
                 }]
             }
         })
 
     return json.dumps({
         "header": {
-            "sellerId": SELLER_ID,
+            "sellerId": "YOUR_SELLER_ID",  # Replace dynamically if needed
             "version": "2.0",
             "issueLocale": "en_US"
         },
