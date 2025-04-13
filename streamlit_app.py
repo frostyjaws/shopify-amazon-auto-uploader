@@ -66,86 +66,92 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     r.raise_for_status()
     return image_url
 
-def abbreviate_title(title):
-    return ''.join([word[0] for word in title.split()][:3]).upper()
-
-def clean_variation(var):
-    parts = var.split()
-    size = parts[0].replace("-", "")
-    color = parts[1][:3].upper()
-    sleeve = "SS" if "Short" in var else "LS"
-    return size, color, sleeve
-
 def generate_amazon_json_feed(title, image_url):
-    title_abbr = abbreviate_title(title)
-    rand_suffix = str(random.randint(1000, 9999))
-    variations = [
-        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-    ]
+    safe_title = title.replace(" ", "-").replace("_", "-")
 
-    messages = [{
-        "messageId": 1,
-        "operationType": "UPSERT",
-        "sku": f"{title_abbr}{rand_suffix}-Parent",
-        "productType": "infant_and_toddler_bodysuits",
-        "attributes": {
-            "title": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-            "brand": [{"value": "NOFO VIBES"}],
-            "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!"}],
-            "bullet_point": [
-                {"value": "High-Quality Ink Printing"},
-                {"value": "Proudly Veteran-Owned"},
-                {"value": "Comfort and Convenience"},
-                {"value": "Perfect Baby Shower Gift"},
-                {"value": "Versatile Sizing & Colors"}
-            ],
-            "manufacturer": [{"value": "NOFO VIBES"}],
-            "department": [{"value": "unisex-baby"}],
-            "variationTheme": [{"value": "size_name"}],
-            "parentage": [{"value": "parent"}],
-            "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}],
-            "batteries_required": [{"value": False}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
-        }
-    }]
-
-    for i, var in enumerate(variations):
-        size, color, sleeve = clean_variation(var)
-        sku = f"{title_abbr}{rand_suffix}-{size}-{color}-{sleeve}"
-        messages.append({
-            "messageId": i + 2,
-            "operationType": "UPSERT",
-            "sku": sku,
-            "productType": "infant_and_toddler_bodysuits",
+    messages = [
+        {
+            "messageId": 1,
+            "sku": f"{safe_title}-PARENT",
+            "operationType": "UPDATE",
+            "productType": "LEOTARD",
+            "requirements": "LISTING",
             "attributes": {
-                "title": [{"value": f"{title} - {var}"}],
+                "item_name": [{"value": "Girls' Gymnastics Leotard"}],
                 "brand": [{"value": "NOFO VIBES"}],
-                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!"}],
-                "bullet_point": [
-                    {"value": "High-Quality Ink Printing"},
-                    {"value": "Proudly Veteran-Owned"},
-                    {"value": "Comfort and Convenience"},
-                    {"value": "Perfect Baby Shower Gift"},
-                    {"value": "Versatile Sizing & Colors"}
-                ],
-                "manufacturer": [{"value": "NOFO VIBES"}],
-                "department": [{"value": "unisex-baby"}],
-                "variationTheme": [{"value": "size_name"}],
-                "parentage": [{"value": "child"}],
-                "parent_sku": [{"value": f"{title_abbr}{rand_suffix}-Parent"}],
-                "size_name": [{"value": var}],
-                "main_image": [{"value": image_url}],
-                "country_of_origin": [{"value": "US"}],
+                "item_type_keyword": [{"value": "bodysuits"}],
+                "product_description": [{"value": DESCRIPTION}],
+                "bullet_point": [{"value": b} for b in BULLETS],
+                "target_gender": [{"value": "female"}],
+                "age_range_description": [{"value": "child"}],
+                "material": [{"value": "polyester"}, {"value": "spandex"}],
+                "department": [{"value": "girls"}],
+                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
+                "parentage_level": [{"value": "parent"}],
+                "model_number": [{"value": f"{title}"}],
+                "country_of_origin": [{"value": "CN"}],
                 "condition_type": [{"value": "new_new"}],
                 "batteries_required": [{"value": False}],
+                "fabric_type": [{"value": "100% cotton"}],
                 "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
+            }
+        }
+    ]
+
+    for idx, variation in enumerate(VARIATIONS, start=2):
+        parts = variation.split()
+        size = parts[0]
+        color = parts[1]
+        sleeve = " ".join(parts[2:])
+        sku = f"{color}-{sleeve.replace(' ', '')}-{idx}"
+
+        messages.append({
+            "messageId": idx,
+            "sku": sku,
+            "operationType": "UPDATE",
+            "productType": "LEOTARD",
+            "requirements": "LISTING",
+            "attributes": {
+                "item_name": [{"value": f"Girls' Leotard - {variation}"}],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_type_keyword": [{"value": "bodysuits"}],
+                "product_description": [{"value": f"Baby Leotard - {variation} - {DESCRIPTION}"}],
+                "bullet_point": [{"value": b} for b in BULLETS[:2]],
+                "target_gender": [{"value": "female"}],
+                "age_range_description": [{"value": "child"}],
+                "material": [{"value": "polyester"}, {"value": "spandex"}],
+                "department": [{"value": "girls"}],
+                "variation_theme": [{"name": "MODEL/SIZE_NAME"}],
+                "parentage_level": [{"value": "child"}],
+                "child_parent_sku_relationship": [{"child_relationship_type": "variation", "parent_sku": f"{safe_title}-PARENT"}],
+                "model_number": [{"value": f"{title}"}],
+                "size": [{"value": size}],
+                "color": [{"value": color}],
+                "model_name": [{"value": "Classic Fit"}],
+                "style": [{"value": sleeve}],
+                "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
+                "merchant_suggested_asin": [{"value": "B07D3NM8X3"}],
+                "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
+                "item_package_dimensions": [{"length": {"value": 25.4, "unit": "centimeters"}, "width": {"value": 20.32, "unit": "centimeters"}, "height": {"value": 2.54, "unit": "centimeters"}}],
+                "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
+                "list_price": [{"currency": "USD", "value": 19.99}],
+                "import_designation": [{"value": "imported"}],
+                "country_of_origin": [{"value": "CN"}],
+                "condition_type": [{"value": "new_new"}],
+                "batteries_required": [{"value": False}],
+                "fabric_type": [{"value": "100% cotton"}],
+                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+                "main_product_image_locator": [{"media_location": image_url, "marketplace_id": MARKETPLACE_ID}],
+                "purchasable_offer": [{
+                    "currency": "USD",
+                    "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                    "marketplace_id": MARKETPLACE_ID
+                }],
+                "fulfillment_availability": [{
+                    "quantity": 999,
+                    "fulfillment_channel_code": "DEFAULT",
+                    "marketplace_id": MARKETPLACE_ID
+                }]
             }
         })
 
@@ -214,63 +220,6 @@ def download_amazon_processing_report(feed_status, access_token):
     report.raise_for_status()
     return report.text
 
-
-def generate_inventory_feed_json(title, seller_id):
-    variations = [
-        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-    ]
-    def abbreviate_title(title):
-        return ''.join([word[0] for word in title.split()][:3]).upper()
-    title_abbr = abbreviate_title(title)
-    rand_suffix = "2847"
-    messages = []
-    for i, var in enumerate(variations):
-        parts = var.split()
-        size = parts[0].replace("-", "")
-        color = parts[1][:3].upper()
-        sleeve = "SS" if "Short" in var else "LS"
-        sku = f"{title_abbr}{rand_suffix}-{size}-{color}-{sleeve}"
-        messages.append({
-            "messageId": i + 1,
-            "operationType": "UPDATE",
-            "sku": sku,
-            "quantity": {"value": 999}
-        })
-    return {
-        "header": {"sellerId": seller_id, "version": "2.0"},
-        "messages": messages
-    }
-
-def submit_inventory_feed(inventory_feed, access_token):
-    doc_res = requests.post(
-        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
-        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
-        json={"contentType": "application/json"}
-    )
-    doc_res.raise_for_status()
-    doc = doc_res.json()
-    upload = requests.put(doc["url"], data=json.dumps(inventory_feed).encode("utf-8"),
-                          headers={"Content-Type": "application/json"})
-    upload.raise_for_status()
-    feed_res = requests.post(
-        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
-        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
-        json={
-            "feedType": "POST_INVENTORY_AVAILABILITY_DATA",
-            "marketplaceIds": [MARKETPLACE_ID],
-            "inputFeedDocumentId": doc["feedDocumentId"]
-        }
-    )
-    feed_res.raise_for_status()
-    return feed_res.json()["feedId"]
-
-
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
@@ -299,10 +248,6 @@ if uploaded_file:
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
-            st.info("📦 Submitting Inventory Feed...")
-            inventory_json = generate_inventory_feed_json(file_stem.replace("-", " "), SELLER_ID)
-            inventory_feed_id = submit_inventory_feed(inventory_json, token)
-            st.success(f"✅ Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
