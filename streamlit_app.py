@@ -91,6 +91,14 @@ def generate_amazon_json_feed(title, image_url):
         sleeve = "SS" if "Short" in variation else "LS"
         return f"{slug}-{size}-{color}-{sleeve}"
 
+    def extract_color_and_sleeve(variation):
+        color_map = "White"
+        sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
+        for word in variation.split():
+            if word.lower() in ["white", "pink", "blue", "natural"]:
+                color_map = word.capitalize()
+        return color_map, sleeve_type
+
     slug = format_slug(title)
     parent_sku = f"{slug}-PARENT"
     messages = [{
@@ -102,26 +110,32 @@ def generate_amazon_json_feed(title, image_url):
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
-            "item_type_keyword": [{"value": "bodysuits"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
             "product_description": [{"value": DESCRIPTION}],
             "bullet_point": [{"value": b} for b in BULLETS],
-            "target_gender": [{"value": "female"}],
-            "age_range_description": [{"value": "child"}],
-            "material": [{"value": "polyester"}, {"value": "spandex"}],
-            "department": [{"value": "girls"}],
-            "variation_theme": [{"name": "SIZE_NAME"}],
+            "target_gender": [{"value": "Female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material_type": [{"value": "Cotton"}, {"value": "Spandex"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "size_name"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": title}],
+            "model_name": [{"value": title}],
+            "import_designation": [{"value": "Imported"}],
+            "merchant_suggested_asin": [{"value": "B0TESTASIN"}],
             "country_of_origin": [{"value": "CN"}],
+            "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
             "condition_type": [{"value": "new_new"}],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
+            "supplier_declared_dg_hz_regulation": [{"value": "Not Applicable"}]
         }
     }]
 
     for idx, variation in enumerate(variations, start=2):
         sku = format_variation_sku(slug, variation)
+        color_map, sleeve_type = extract_color_and_sleeve(variation)
+
         messages.append({
             "messageId": idx,
             "sku": sku,
@@ -131,31 +145,40 @@ def generate_amazon_json_feed(title, image_url):
             "attributes": {
                 "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
                 "brand": [{"value": "NOFO VIBES"}],
-                "item_type_keyword": [{"value": "bodysuits"}],
+                "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
                 "product_description": [{"value": DESCRIPTION}],
                 "bullet_point": [{"value": b} for b in BULLETS[:2]],
-                "target_gender": [{"value": "female"}],
-                "age_range_description": [{"value": "child"}],
-                "material": [{"value": "polyester"}, {"value": "spandex"}],
-                "department": [{"value": "girls"}],
-                "variation_theme": [{"name": "SIZE_NAME"}],
+                "target_gender": [{"value": "Female"}],
+                "age_range_description": [{"value": "Infant"}],
+                "material_type": [{"value": "Cotton"}, {"value": "Spandex"}],
+                "department": [{"value": "Baby Girls"}],
+                "variation_theme": [{"name": "size_name"}],
                 "parentage_level": [{"value": "child"}],
                 "child_parent_sku_relationship": [{
                     "child_relationship_type": "variation",
                     "parent_sku": parent_sku
                 }],
-                "size": [{"value": variation}],
+                "size_name": [{"value": variation}],
                 "model_number": [{"value": title}],
-                "style": [{"value": "Classic Fit"}],
-                "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
+                "model_name": [{"value": title}],
+                "import_designation": [{"value": "Imported"}],
+                "merchant_suggested_asin": [{"value": "B0TESTASIN"}],
+                "country_of_origin": [{"value": "CN"}],
                 "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
+                "condition_type": [{"value": "new_new"}],
+                "batteries_required": [{"value": False}],
+                "fabric_type": [{"value": "100% cotton"}],
+                "supplier_declared_dg_hz_regulation": [{"value": "Not Applicable"}],
+                "care_instructions": [{"value": "Machine Wash"}],
+                "sleeve_type": [{"value": sleeve_type}],
+                "color_map": [{"value": color_map}],
+                "list_price": [{"currency": "USD", "value": 19.99}],
                 "item_package_dimensions": [{
                     "length": {"value": 25.4, "unit": "centimeters"},
                     "width": {"value": 20.32, "unit": "centimeters"},
                     "height": {"value": 2.54, "unit": "centimeters"}
                 }],
                 "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
-                "list_price": [{"currency": "USD", "value": 19.99}],
                 "main_product_image_locator": [{
                     "media_location": image_url,
                     "marketplace_id": "ATVPDKIKX0DER"
@@ -181,6 +204,7 @@ def generate_amazon_json_feed(title, image_url):
         },
         "messages": messages
     }, indent=2)
+
 
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
