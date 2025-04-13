@@ -15,13 +15,15 @@ REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
 MARKETPLACE_ID = st.secrets["MARKETPLACE_ID"]
 SELLER_ID = st.secrets["SELLER_ID"]
 
-DESCRIPTION = "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES. Crafted for comfort and made with love!"
+DESCRIPTION = "Celebrate the arrival of your little one with our adorable Custom Baby onesie®, the perfect baby shower gift that will be cherished for years to come. This charming piece of baby clothing is an ideal new baby gift for welcoming a newborn into the world. Whether it's for a baby announcement, a pregnancy reveal, or a special baby shower, this baby onesie® is sure to delight. Our Custom Baby onesie® features a playful and cute design, perfect for showcasing your baby's unique personality. Made with love and care, this baby onesie® is designed to keep your baby comfortable and stylish. It's an essential item in cute baby clothes, making it a standout piece for any new arrival. Perfect for both baby boys and girls, this versatile baby onesie® is soft, comfortable, and durable, ensuring it can withstand numerous washes. The easy-to-use snaps make changing a breeze, providing convenience for busy parents. Whether you're looking for a personalized baby onesie®, a funny baby onesie®, or a cute baby onesie®, this Custom Baby onesie® has it all. It’s ideal for celebrating the excitement of a new baby, featuring charming and customizable designs. This makes it a fantastic option for funny baby clothes that bring a smile to everyone's face. Imagine gifting this delightful baby onesie® at a baby shower or using it as a memorable baby announcement or pregnancy reveal. It’s perfect for anyone searching for a unique baby gift, announcement baby onesie®, or a special new baby onesie®. This baby onesie® is not just an item of clothing; it’s a keepsake that celebrates the joy and wonder of a new life.
+
+From baby boy clothes to baby girl clothes, this baby onesie® is perfect for any newborn. Whether it’s a boho design, a Fathers Day gift, or custom baby clothes, this piece is a wonderful addition to any baby's wardrobe."
 BULLETS = [
-    "🎨 High-Quality Ink Printing",
-    "🎖️ Proudly Veteran-Owned",
-    "👶 Comfort and Convenience",
-    "🎁 Perfect Baby Shower Gift",
-    "🔯 Versatile Sizing & Colors"
+    "🎨 High-Quality Ink Printing: Our Baby Bodysuit features vibrant, long-lasting colors thanks to direct-to-garment printing, ensuring that your baby's outfit looks fantastic wash after wash.",
+    "🎖️ Proudly Veteran-Owned: Show your support for our heroes while dressing your little one in style with this adorable newborn romper from a veteran-owned small business.",
+    "👶 Comfort and Convenience: Crafted from soft, breathable materials, this Bodysuit provides maximum comfort for your baby. Plus, the convenient snap closure makes diaper changes a breeze.",
+    "🎁 Perfect Baby Shower Gift: This funny Baby Bodysuit makes for an excellent baby shower gift or a thoughtful present for any new parents. It's a sweet and meaningful addition to any baby's wardrobe.",
+    "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
 VARIATIONS = [
