@@ -319,7 +319,7 @@ if uploaded_file:
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
-            st.code(json_feed, language='json')
+            st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
