@@ -128,7 +128,7 @@ def generate_amazon_json_feed(title, image_url):
             "condition_type": [{"value": "new_new"}],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "Not Applicable"}]
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
         }
     }]
 
@@ -148,7 +148,7 @@ def generate_amazon_json_feed(title, image_url):
                 "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
                 "product_description": [{"value": DESCRIPTION}],
                 "bullet_point": [{"value": b} for b in BULLETS[:2]],
-                "target_gender": [{"value": "Female"}],
+                "target_gender": [{"value": "female"}],
                 "age_range_description": [{"value": "Infant"}],
                 "material": [{"value": "Cotton"}, {"value": "Spandex"}],
                 "department": [{"value": "Baby Girls"}],
