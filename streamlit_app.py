@@ -382,7 +382,7 @@ if uploaded_file:
             xml_string = generate_image_feed_xml(f"{slug}-PARENT", ACCESSORY_IMAGES)
             image_feed_id = submit_image_feed(xml_string, token)
             sst.success(f"📸 Accessory Images Submitted — Feed ID: {image_feed_id}")
-st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+    st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
