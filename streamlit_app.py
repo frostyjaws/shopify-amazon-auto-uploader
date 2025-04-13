@@ -167,7 +167,7 @@ def generate_amazon_json_feed(title, image_url):
                 "batteries_required": [{"value": False}],
                 "fabric_type": [{"value": "100% cotton"}],
                 "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],          
-                "supplier_declared_has_product_identifier_exemption": [{"value": True }]
+                "supplier_declared_has_product_identifier_exemption": [{"value": True }],
                 "care_instructions": [{"value": "Machine Wash"}],
                 "sleeve": [{"value": sleeve_type}],
                 "color": [{"value": "multi"}],
