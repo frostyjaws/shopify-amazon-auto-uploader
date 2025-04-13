@@ -320,7 +320,69 @@ if uploaded_file:
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
-            st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+            s
+            # SUBMIT ACCESSORY IMAGE FEED
+            st.info("Submitting Accessory Images to Amazon...")
+            from xml.etree.ElementTree import Element, SubElement, tostring
+            from xml.dom import minidom
+
+            def generate_image_feed_xml(sku, image_urls):
+                envelope = Element("AmazonEnvelope")
+                header = SubElement(envelope, "Header")
+                doc_version = SubElement(header, "DocumentVersion")
+                doc_version.text = "1.01"
+                merchant_id = SubElement(header, "MerchantIdentifier")
+                merchant_id.text = SELLER_ID
+
+                message_type = SubElement(envelope, "MessageType")
+                message_type.text = "ProductImage"
+
+                for i, url in enumerate(image_urls):
+                    message = SubElement(envelope, "Message")
+                    message_id = SubElement(message, "MessageID")
+                    message_id.text = str(i + 1)
+
+                    operation_type = SubElement(message, "OperationType")
+                    operation_type.text = "Update"
+
+                    product_image = SubElement(message, "ProductImage")
+                    sku_tag = SubElement(product_image, "SKU")
+                    sku_tag.text = f"{slug}-PARENT"
+
+                    image_type = SubElement(product_image, "ImageType")
+                    image_type.text = f"PT{i+1}"
+
+                    image_location = SubElement(product_image, "ImageLocation")
+                    image_location.text = url
+
+                rough_string = tostring(envelope, 'utf-8')
+                return minidom.parseString(rough_string).toprettyxml(indent="  ")
+
+            def submit_image_feed(xml_string, access_token):
+                doc_res = requests.post(
+                    "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+                    headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+                    json={"contentType": "text/xml; charset=UTF-8"}
+                )
+                doc = doc_res.json()
+                upload = requests.put(doc["url"], data=xml_string.encode("utf-8"),
+                                      headers={"Content-Type": "text/xml; charset=UTF-8"})
+                upload.raise_for_status()
+                feed_res = requests.post(
+                    "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+                    headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+                    json={
+                        "feedType": "POST_PRODUCT_IMAGE_DATA",
+                        "marketplaceIds": [MARKETPLACE_ID],
+                        "inputFeedDocumentId": doc["feedDocumentId"]
+                    }
+                )
+                return feed_res.json()["feedId"]
+
+            xml_string = generate_image_feed_xml(f"{slug}-PARENT", ACCESSORY_IMAGES)
+            image_feed_id = submit_image_feed(xml_string, token)
+            st.success(f"📸 Accessory Images Submitted — Feed ID: {image_feed_id}")
+t.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
