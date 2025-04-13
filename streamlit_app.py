@@ -66,7 +66,6 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     r.raise_for_status()
     return image_url
 
-
 def generate_amazon_json_feed(title, image_url):
     import random
     variations = [
@@ -85,53 +84,96 @@ def generate_amazon_json_feed(title, image_url):
 
     def format_variation_sku(slug, variation):
         parts = variation.split()
-        size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M")                        .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M")                        .replace("18M", "18M").replace("24M", "24M")
+        size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
+                       .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
+                       .replace("18M", "18M").replace("24M", "24M")
         color = parts[1][0].upper()
         sleeve = "SS" if "Short" in variation else "LS"
         return f"{slug}-{size}-{color}-{sleeve}"
 
     slug = format_slug(title)
     parent_sku = f"{slug}-PARENT"
-    messages = []
-
-    for variation in variations:
-        sku = format_variation_sku(slug, variation)
-        message = {
-            "sku": sku,
-            "productType": "infant_and_toddler_bodysuits",
-            "attributes": {
-                "brand": [{"value": "NOFO VIBES"}],
-                "item_name": [{"value": f"{title} - Baby Bodysuit"}],
-                "manufacturer": [{"value": "NOFO VIBES"}],
-                "product_description": [{"value": "Celebrate the arrival of your little one with a beautifully printed baby bodysuit from NOFO VIBES."}],
-                "main_image": [{"value": image_url}],
-                "bullet_point": [
-                    {"value": "🎨 High-Quality Ink Printing"},
-                    {"value": "🎖️ Proudly Veteran-Owned"},
-                    {"value": "👶 Comfort and Convenience"},
-                    {"value": "🎁 Perfect Baby Shower Gift"},
-                    {"value": "📏 Versatile Sizing & Colors"}
-                ],
-                "product_site_launch_date": [{"value": "2023-01-01"}],
-                "country_of_origin": [{"value": "US"}],
-                "department": [{"value": "baby-boys"}],
-                "parentage": [{"value": "child"}],
-                "variation_theme": [{"value": "size_name"}],
-                "size_name": [{"value": variation}],
-                "parent_sku": [{"value": parent_sku}]
-            }
+    messages = [{
+        "messageId": 1,
+        "sku": parent_sku,
+        "operationType": "UPDATE",
+        "productType": "LEOTARD",
+        "requirements": "LISTING",
+        "attributes": {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "child"}],
+            "material": [{"value": "polyester"}, {"value": "spandex"}],
+            "department": [{"value": "girls"}],
+            "variation_theme": [{"name": "SIZE_NAME"}],
+            "parentage_level": [{"value": "parent"}],
+            "model_number": [{"value": title}],
+            "country_of_origin": [{"value": "CN"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}]
         }
-        messages.append(message)
+    }]
 
-    feed = {
-        "header": {
-            "sellerId": SELLER_ID,
-            "version": "2.0"
-        },
-        "messages": messages
-    }
-    return json.dumps(feed, indent=2)
+    for idx, variation in enumerate(variations, start=2):
+        sku = format_variation_sku(slug, variation)
+        messages.append({
+            "messageId": idx,
+            "sku": sku,
+            "operationType": "UPDATE",
+            "productType": "LEOTARD",
+            "requirements": "LISTING",
+            "attributes": {
+                "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+                "brand": [{"value": "NOFO VIBES"}],
+                "item_type_keyword": [{"value": "bodysuits"}],
+                "product_description": [{"value": DESCRIPTION}],
+                "bullet_point": [{"value": b} for b in BULLETS[:2]],
+                "target_gender": [{"value": "female"}],
+                "age_range_description": [{"value": "child"}],
+                "material": [{"value": "polyester"}, {"value": "spandex"}],
+                "department": [{"value": "girls"}],
+                "variation_theme": [{"name": "SIZE_NAME"}],
+                "parentage_level": [{"value": "child"}],
+                "child_parent_sku_relationship": [{
+                    "child_relationship_type": "variation",
+                    "parent_sku": parent_sku
+                }],
+                "size_name": [{"value": variation}],
+                "model_number": [{"value": title}],
+                "style": [{"value": "Classic Fit"}],
+                "care_instructions": [{"value": "Machine wash cold, tumble dry low"}],
+                "externally_assigned_product_identifier": [{"value": "123456789012", "type": "UPC"}],
+                "item_package_dimensions": [{
+                    "length": {"value": 25.4, "unit": "centimeters"},
+                    "width": {"value": 20.32, "unit": "centimeters"},
+                    "height": {"value": 2.54, "unit": "centimeters"}
+                }],
+                "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
+                "list_price": [{"currency": "USD", "value": 19.99}],
+                "main_product_image_locator": [{
+                    "media_location": image_url,
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }],
+                "purchasable_offer": [{
+                    "currency": "USD",
+                    "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }],
+                "fulfillment_availability": [{
+                    "quantity": 999,
+                    "fulfillment_channel_code": "DEFAULT",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }]
+            }
+        })
 
+    return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
             "version": "2.0",
