@@ -14,6 +14,14 @@ LWA_CLIENT_SECRET = st.secrets["LWA_CLIENT_SECRET"]
 REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
 MARKETPLACE_ID = st.secrets["MARKETPLACE_ID"]
 SELLER_ID = st.secrets["SELLER_ID"]
+ACCESSORY_IMAGES = [
+    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
+    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
+    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
+    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy.jpg?v=1744051115",
+    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
+]
+
 
 DESCRIPTION = """
 <p>Celebrate the arrival of your little one with our adorable Custom Baby onesie&reg;, the perfect baby shower gift that will be cherished for years to come. This charming piece of baby clothing is an ideal new baby gift for welcoming a newborn into the world. Whether it's for a baby announcement, a pregnancy reveal, or a special baby shower, this baby onesie&reg; is sure to delight.</p>
@@ -199,6 +207,13 @@ def generate_amazon_json_feed(title, image_url):
                     "media_location": image_url,
                     "marketplace_id": "ATVPDKIKX0DER"
                 }],
+"other_image_locator": [
+    { "media_location": "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115", "marketplace_id": "ATVPDKIKX0DER" },
+    { "media_location": "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115", "marketplace_id": "ATVPDKIKX0DER" },
+    { "media_location": "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115", "marketplace_id": "ATVPDKIKX0DER" },
+    { "media_location": "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy.jpg?v=1744051115", "marketplace_id": "ATVPDKIKX0DER" },
+    { "media_location": "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115", "marketplace_id": "ATVPDKIKX0DER" }
+],
                 "purchasable_offer": [{
                     "currency": "USD",
                     "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
