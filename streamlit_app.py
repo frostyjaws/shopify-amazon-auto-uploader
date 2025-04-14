@@ -243,7 +243,7 @@ def generate_amazon_json_feed(title, image_url):
             **other_product_images,
             "purchasable_offer": [{
                 "currency": "USD",
-                "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
                 "marketplace_id": "ATVPDKIKX0DER"
             }],
             "fulfillment_availability": [{
