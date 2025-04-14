@@ -119,6 +119,37 @@ def generate_amazon_json_feed(title, image_url):
         return color_map, sleeve_type
 
     slug = format_slug(title)
+
+    price_map = {
+        "Newborn White Short Sleeve": 21.99,
+        "Newborn White Long Sleeve": 22.99,
+        "Newborn Natural Short Sleeve": 27.99,
+        "0-3M White Short Sleeve": 21.99,
+        "0-3M White Long Sleeve": 22.99,
+        "0-3M Pink Short Sleeve": 27.99,
+        "0-3M Blue Short Sleeve": 27.99,
+        "3-6M White Short Sleeve": 21.99,
+        "3-6M White Long Sleeve": 22.99,
+        "3-6M Blue Short Sleeve": 27.99,
+        "3-6M Pink Short Sleeve": 27.99,
+        "6M Natural Short Sleeve": 27.99,
+        "6-9M White Short Sleeve": 21.99,
+        "6-9M White Long Sleeve": 22.99,
+        "6-9M Pink Short Sleeve": 27.99,
+        "6-9M Blue Short Sleeve": 27.99,
+        "12M White Short Sleeve": 21.99,
+        "12M White Long Sleeve": 22.99,
+        "12M Natural Short Sleeve": 27.99,
+        "12M Pink Short Sleeve": 27.99,
+        "12M Blue Short Sleeve": 27.99,
+        "18M White Short Sleeve": 21.99,
+        "18M White Long Sleeve": 22.99,
+        "18M Natural Short Sleeve": 27.99,
+        "24M White Short Sleeve": 21.99,
+        "24M White Long Sleeve": 22.99,
+        "24M Natural Short Sleeve": 27.99
+    }
+
     parent_sku = f"{slug}-PARENT"
 
     messages = [{
@@ -198,7 +229,7 @@ def generate_amazon_json_feed(title, image_url):
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
             "color": [{"value": "multi"}],
-            "list_price": [{"currency": "USD", "value": 19.99}],
+            "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
                 "length": {"value": 25.4, "unit": "centimeters"},
                 "width": {"value": 20.32, "unit": "centimeters"},
