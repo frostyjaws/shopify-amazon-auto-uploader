@@ -230,6 +230,7 @@ def generate_amazon_json_feed(title, image_url):
             "sleeve": [{"value": sleeve_type}],
             "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
+            "standard_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
                 "length": {"value": 25.4, "unit": "centimeters"},
                 "width": {"value": 20.32, "unit": "centimeters"},
