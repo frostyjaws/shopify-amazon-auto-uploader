@@ -235,7 +235,7 @@ def generate_amazon_json_feed(title, image_url):
                 "width": {"value": 3, "unit": "inches"},
                 "height": {"value": 1, "unit": "inches"}
             }],
-            "item_package_weight": [{"value": 3, "unit": "oz"}],
+            "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
             "main_product_image_locator": [{
                 "media_location": image_url,
                 "marketplace_id": "ATVPDKIKX0DER"
