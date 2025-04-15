@@ -192,7 +192,7 @@ def generate_amazon_json_feed(title, image_url):
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
                 ][i],
                 "marketplace_id": "ATVPDKIKX0DER"
@@ -230,7 +230,7 @@ def generate_amazon_json_feed(title, image_url):
             "sleeve": [{"value": sleeve_type}],
             "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
-            "item_package_dimensions": [{
+                        "item_package_dimensions": [{
                 "length": {"value": 25.4, "unit": "centimeters"},
                 "width": {"value": 20.32, "unit": "centimeters"},
                 "height": {"value": 2.54, "unit": "centimeters"}
@@ -332,14 +332,15 @@ st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
 uploaded_file = st.file_uploader("Upload PNG File", type="png")
 if uploaded_file:
-    uploaded_file.seek(0)
-    image = Image.open(uploaded_file)
-    file_stem = os.path.splitext(uploaded_file.name)[0]
-    title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
-    handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
-    st.image(image, caption=title_full, use_container_width=True)
-
     if st.button("📤 Submit to Shopify + Amazon"):
+        st.info("🔹 Starting process...")
+        uploaded_file.seek(0)
+        image = Image.open(uploaded_file)
+        file_stem = os.path.splitext(uploaded_file.name)[0]
+        title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+        handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+        st.image(image, caption=title_full, use_container_width=True)
+        st.info("🔹 Image loaded, beginning Shopify upload...")
         try:
             st.info("Uploading to ImgBB + Creating product on Shopify...")
             uploaded_file.seek(0)
