@@ -50,7 +50,8 @@ VARIATIONS = [
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
-    uploaded_file.seek(0)
+    for uploaded_file in uploaded_files:
+        uploaded_file.seek(0)
     imgbb_url = "https://api.imgbb.com/1/upload"
     files = {
         "key": (None, IMGBB_API_KEY),
@@ -330,10 +331,11 @@ def download_amazon_processing_report(feed_status, access_token):
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
-uploaded_file = st.file_uploader("Upload PNG File", type="png")
-if uploaded_file:
+uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
+if uploaded_files:
     if st.button("📤 Submit to Shopify + Amazon"):
         st.info("🔹 Starting process...")
+    for uploaded_file in uploaded_files:
         uploaded_file.seek(0)
         image = Image.open(uploaded_file)
         file_stem = os.path.splitext(uploaded_file.name)[0]
@@ -343,7 +345,8 @@ if uploaded_file:
         st.info("🔹 Image loaded, beginning Shopify upload...")
         try:
             st.info("Uploading to ImgBB + Creating product on Shopify...")
-            uploaded_file.seek(0)
+    for uploaded_file in uploaded_files:
+        uploaded_file.seek(0)
             image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 
             st.success("✅ Shopify Product Created")
