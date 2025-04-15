@@ -4,6 +4,7 @@ import os
 import json
 from PIL import Image
 from io import BytesIO
+import time
 
 # === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
