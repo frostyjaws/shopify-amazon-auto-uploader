@@ -1,3 +1,38 @@
+Skip to content
+Navigation Menu
+frostyjaws
+shopify-amazon-auto-uploader
+
+Type / to search
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+Files
+Go to file
+t
+.devcontainer
+cloudinary_test
+requirements.txt
+streamlit_app.py
+shopify-amazon-auto-uploader
+/streamlit_app.py
+frostyjaws
+frostyjaws
+Update streamlit_app.py
+4454048
+ · 
+2 hours ago
+
+Code
+
+Blame
+371 lines (330 loc) · 17.8 KB
 import streamlit as st
 import requests
 import os
@@ -168,10 +203,8 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}, {"value": "Spandex"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_data": {
-                "parentage": "parent",
-                "variation_theme": "SIZE/COLOR"
-            },
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": title}],
             "model_name": [{"value": title}],
             "import_designation": [{"value": "Imported"}],
@@ -211,11 +244,12 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}, {"value": "Spandex"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_data": {
-                "parentage": "child",
-                "parent_sku": parent_sku,
-                "variation_theme": "SIZE/COLOR"
-            },
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "child"}],
+            "child_parent_sku_relationship": [{
+                "child_relationship_type": "variation",
+                "parent_sku": parent_sku
+            }],
             "size": [{"value": variation}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
@@ -370,3 +404,4 @@ if uploaded_file:
                 st.warning("⚠️ Feed not processed yet. Please check again later.")
         except Exception as e:
             st.error(f"❌ Error: {e}")
+shopify-amazon-auto-uploader/streamlit_app.py at 445404867c46d2870ac5011ef67400c53acb8509 · frostyjaws/shopify-amazon-auto-uploader 
