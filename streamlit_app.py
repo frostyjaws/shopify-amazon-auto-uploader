@@ -354,24 +354,8 @@ if uploaded_files and st.button("📤 Start Upload Queue"):
             json_feed = generate_amazon_json_feed(file_stem, image_url)
 
             st.info("Submitting Feed to Amazon...")
-            for sec in range(65, 0, -1):
-                st.info(f'⏳ Submitting to Amazon in {sec} seconds...')
-                time.sleep(1)
-            retry_count = 0
-            while retry_count < 3:
-                try:
-                    feed_id = submit_amazon_json_feed(json_feed, token)
-                    break
-                except requests.exceptions.HTTPError as e:
-                    if e.response.status_code == 429:
-                        retry_count += 1
-                        st.warning(f'⚠️ Amazon rate limited us. Retrying in 60 seconds... (Attempt {retry_count}/3)')
-                        time.sleep(60)
-                    else:
-                        raise e
-            else:
-                raise Exception('Failed to submit feed after 3 retries.')
-            st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+            countdown = st.empty()
+                countdown.info(f'⏳ Submitting to Amazon in {sec} seconds...')
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
