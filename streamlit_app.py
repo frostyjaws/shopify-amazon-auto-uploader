@@ -3,6 +3,7 @@ import requests
 import os
 import json
 from PIL import Image
+from inventory_feed_submitter import submit_inventory_feed
 from io import BytesIO
 
 # === CREDENTIALS ===
@@ -356,6 +357,12 @@ if uploaded_file:
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+            # 📦 Submit inventory feed with handling_time = 2
+            feed_data = json.loads(json_feed)
+            skus = [msg["sku"] for msg in feed_data["messages"] if "PARENT" not in msg["sku"]]
+            inventory_feed_id = submit_inventory_feed(skus, token, MARKETPLACE_ID, SELLER_ID)
+            st.success(f"📦 Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
+
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
