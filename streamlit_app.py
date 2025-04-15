@@ -354,12 +354,12 @@ if uploaded_files and st.button("📤 Start Upload Queue"):
             json_feed = generate_amazon_json_feed(file_stem, image_url)
 
             st.info("Submitting Feed to Amazon...")
+            time.sleep(65)  # Delay BEFORE feed submission to avoid 429
             feed_id = submit_amazon_json_feed(json_feed, token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
-            time.sleep(65)  # Delay to prevent Amazon rate limiting (429 error)
             st.code(json.dumps(status, indent=2))
 
             if status.get("processingStatus") == "DONE":
