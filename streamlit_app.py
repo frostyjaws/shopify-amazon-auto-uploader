@@ -358,6 +358,7 @@ if uploaded_files and st.button("📤 Start Upload Queue"):
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
+            time.sleep(65)  # Delay to prevent Amazon rate limiting (429 error)
             st.code(json.dumps(status, indent=2))
 
             if status.get("processingStatus") == "DONE":
