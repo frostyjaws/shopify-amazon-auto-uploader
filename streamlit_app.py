@@ -354,8 +354,6 @@ if uploaded_files and st.button("📤 Start Upload Queue"):
             json_feed = generate_amazon_json_feed(file_stem, image_url)
 
             st.info("Submitting Feed to Amazon...")
-            countdown = st.empty()
-                countdown.info(f'⏳ Submitting to Amazon in {sec} seconds...')
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
