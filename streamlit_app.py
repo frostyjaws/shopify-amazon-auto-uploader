@@ -357,6 +357,9 @@ if uploaded_files and st.button("📤 Start Upload Queue"):
 
             st.info("Checking Feed Status...")
             status = check_amazon_feed_status(feed_id, token)
+            if not submitted_successfully:
+                st.error('❌ Amazon feed submission failed after 3 retries. Skipping this file.')
+                continue
             st.code(json.dumps(status, indent=2))
 
             if status.get("processingStatus") == "DONE":
