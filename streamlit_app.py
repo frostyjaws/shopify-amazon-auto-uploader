@@ -230,7 +230,7 @@ def generate_amazon_json_feed(title, image_url):
             "sleeve": [{"value": sleeve_type}],
             "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
-                        "item_package_dimensions": [{
+            "item_package_dimensions": [{
                 "length": {"value": 25.4, "unit": "centimeters"},
                 "width": {"value": 20.32, "unit": "centimeters"},
                 "height": {"value": 2.54, "unit": "centimeters"}
@@ -332,15 +332,14 @@ st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
 uploaded_file = st.file_uploader("Upload PNG File", type="png")
 if uploaded_file:
+    uploaded_file.seek(0)
+    image = Image.open(uploaded_file)
+    file_stem = os.path.splitext(uploaded_file.name)[0]
+    title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+    handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+    st.image(image, caption=title_full, use_container_width=True)
+
     if st.button("📤 Submit to Shopify + Amazon"):
-        st.info("🔹 Starting process...")
-        uploaded_file.seek(0)
-        image = Image.open(uploaded_file)
-        file_stem = os.path.splitext(uploaded_file.name)[0]
-        title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
-        handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
-        st.image(image, caption=title_full, use_container_width=True)
-        st.info("🔹 Image loaded, beginning Shopify upload...")
         try:
             st.info("Uploading to ImgBB + Creating product on Shopify...")
             uploaded_file.seek(0)
