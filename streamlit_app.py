@@ -331,30 +331,26 @@ def download_amazon_processing_report(feed_status, access_token):
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
-uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
-if uploaded_files:
-    if st.button("📤 Submit to Shopify + Amazon"):
-        st.info("🔹 Starting process...")
-    for uploaded_file in uploaded_files:
-        uploaded_file.seek(0)
-        image = Image.open(uploaded_file)
-        file_stem = os.path.splitext(uploaded_file.name)[0]
-        title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
-        handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
-        st.image(image, caption=title_full, use_container_width=True)
-        st.info("🔹 Image loaded, beginning Shopify upload...")
-        try:
-            st.info("Uploading to ImgBB + Creating product on Shopify...")
-    for uploaded_file in uploaded_files:
-        uploaded_file.seek(0)
-            image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 
+uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
+if uploaded_files and st.button("📤 Start Upload Queue"):
+    token = get_amazon_access_token()
+    for uploaded_file in uploaded_files:
+        try:
+            file_stem = os.path.splitext(uploaded_file.name)[0]
+            title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+            handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+
+            uploaded_file.seek(0)
+            image = Image.open(uploaded_file)
+            st.image(image, caption=title_full, use_container_width=True)
+
+            st.info(f"Uploading '{file_stem}' to Shopify...")
+            image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
             st.success("✅ Shopify Product Created")
 
             st.info("Generating Amazon Feed...")
-            token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
-            # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
@@ -369,6 +365,7 @@ if uploaded_files:
                 report = download_amazon_processing_report(status, token)
                 st.code(report)
             else:
-                st.warning("⚠️ Feed not processed yet. Please check again later.")
+                st.warning("⚠️ Feed not processed yet for this item.")
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f"❌ Error processing {uploaded_file.name}: {e}")
+
