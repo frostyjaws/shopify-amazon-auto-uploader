@@ -168,8 +168,10 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}, {"value": "Spandex"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
-            "parentage_level": [{"value": "parent"}],
+            "variation_data": {
+                "parentage": "parent",
+                "variation_theme": "SIZE/COLOR"
+            },
             "model_number": [{"value": title}],
             "model_name": [{"value": title}],
             "import_designation": [{"value": "Imported"}],
@@ -209,12 +211,11 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}, {"value": "Spandex"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
-            "parentage_level": [{"value": "child"}],
-            "child_parent_sku_relationship": [{
-                "child_relationship_type": "variation",
-                "parent_sku": parent_sku
-            }],
+            "variation_data": {
+                "parentage": "child",
+                "parent_sku": parent_sku,
+                "variation_theme": "SIZE/COLOR"
+            },
             "size": [{"value": variation}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
