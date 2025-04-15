@@ -3,7 +3,6 @@ import requests
 import os
 import json
 from PIL import Image
-from inventory_feed_submitter import submit_inventory_feed
 from io import BytesIO
 
 # === CREDENTIALS ===
@@ -331,48 +330,102 @@ def download_amazon_processing_report(feed_status, access_token):
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
-uploaded_file = st.file_uploader("Upload PNG File", type="png")
-if uploaded_file:
-    if st.button("📤 Submit to Shopify + Amazon"):
-        st.info("🔹 Starting process...")
-        uploaded_file.seek(0)
-        image = Image.open(uploaded_file)
-        file_stem = os.path.splitext(uploaded_file.name)[0]
-        title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
-        handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
-        st.image(image, caption=title_full, use_container_width=True)
-        st.info("🔹 Image loaded, beginning Shopify upload...")
-        try:
-            st.info("Uploading to ImgBB + Creating product on Shopify...")
+uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
+
+
+if uploaded_files:
+    if len(uploaded_files) == 1:
+        # Process single file as usual
+        uploaded_file = uploaded_files[0]
+
+    else:
+        st.info("🔄 Multiple PNGs detected — preparing a single Amazon feed for all...")
+        all_messages = []
+        image_urls = {}
+
+        # Step 1: Upload all images to ImgBB + Shopify
+        for uploaded_file in uploaded_files:
+            file_stem = os.path.splitext(uploaded_file.name)[0]
+            title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+            handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+
+            st.markdown(f"---\n### 🧼 Processing: `{uploaded_file.name}`")
             uploaded_file.seek(0)
             image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
+            image_urls[file_stem] = image_url
 
-            st.success("✅ Shopify Product Created")
+        # Step 2: Generate all Amazon messages (but don’t submit yet)
+        for uploaded_file in uploaded_files:
+            file_stem = os.path.splitext(uploaded_file.name)[0]
+            image_url = image_urls[file_stem]
+            partial_feed = json.loads(generate_amazon_json_feed(file_stem, image_url))
+            all_messages.extend(partial_feed["messages"])
 
-            st.info("Generating Amazon Feed...")
-            token = get_amazon_access_token()
-            json_feed = generate_amazon_json_feed(file_stem, image_url)
-            # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
+        # Step 3: Submit one single Amazon feed
+        token = get_access_token()
+        full_feed = {
+            "header": {
+                "sellerId": SELLER_ID,
+                "version": "2.0",
+                "issueLocale": "en_US"
+            },
+            "messages": all_messages
+        }
 
-            st.info("Submitting Feed to Amazon...")
-            feed_id = submit_amazon_json_feed(json_feed, token)
-            st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
-            # 📦 Submit inventory feed with handling_time = 2
-            feed_data = json.loads(json_feed)
-            skus = [msg["sku"] for msg in feed_data["messages"] if "PARENT" not in msg["sku"]]
-            inventory_feed_id = submit_inventory_feed(skus, token, MARKETPLACE_ID, SELLER_ID)
-            st.success(f"📦 Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
+        st.info("📤 Submitting combined feed to Amazon...")
+        feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
+        st.success(f"✅ Batch Amazon Feed Submitted — Feed ID: {feed_id}")
+
+        # Step 4: Submit inventory feed for all SKUs
+        all_skus = [msg["sku"] for msg in all_messages if "PARENT" not in msg["sku"]]
+        inventory_feed_id = submit_inventory_feed(all_skus, token, MARKETPLACE_ID, SELLER_ID)
+        st.success(f"📦 Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
+        st.stop()
+
+            st.markdown(f"---\n### 📦 Processing: `{uploaded_file.name}`")
+            st.info(f"🕒 Waiting for safe upload window...")
+
+            import time
+            COUNTDOWN = 5  # seconds between uploads
+            for remaining in range(COUNTDOWN, 0, -1):
+                st.write(f"Starting in {remaining} seconds...")
+                time.sleep(1)
 
 
-            st.info("Checking Feed Status...")
-            status = check_amazon_feed_status(feed_id, token)
-            st.code(json.dumps(status, indent=2))
+        if st.button("📤 Submit to Shopify + Amazon"):
+            st.info("🔹 Starting process...")
+            uploaded_file.seek(0)
+            image = Image.open(uploaded_file)
+            file_stem = os.path.splitext(uploaded_file.name)[0]
+            title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+            handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+            st.image(image, caption=title_full, use_container_width=True)
+            st.info("🔹 Image loaded, beginning Shopify upload...")
+            try:
+                st.info("Uploading to ImgBB + Creating product on Shopify...")
+                uploaded_file.seek(0)
+                image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 
-            if status.get("processingStatus") == "DONE":
-                st.info("Downloading Processing Report...")
-                report = download_amazon_processing_report(status, token)
-                st.code(report)
-            else:
-                st.warning("⚠️ Feed not processed yet. Please check again later.")
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
+                st.success("✅ Shopify Product Created")
+
+                st.info("Generating Amazon Feed...")
+                token = get_amazon_access_token()
+                json_feed = generate_amazon_json_feed(file_stem, image_url)
+                # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
+
+                st.info("Submitting Feed to Amazon...")
+                feed_id = submit_amazon_json_feed(json_feed, token)
+                st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+
+                st.info("Checking Feed Status...")
+                status = check_amazon_feed_status(feed_id, token)
+                st.code(json.dumps(status, indent=2))
+
+                if status.get("processingStatus") == "DONE":
+                    st.info("Downloading Processing Report...")
+                    report = download_amazon_processing_report(status, token)
+                    st.code(report)
+                else:
+                    st.warning("⚠️ Feed not processed yet. Please check again later.")
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
