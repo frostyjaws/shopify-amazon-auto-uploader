@@ -166,7 +166,7 @@ def generate_amazon_json_feed(title, image_url):
             "bullet_point": [{"value": b} for b in BULLETS],
             "target_gender": [{"value": "female"}],
             "age_range_description": [{"value": "Infant"}],
-            "material": [{"value": "Cotton"}, {"value": "Spandex"}],
+            "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
             "variation_theme": [{"name": "SIZE/COLOR"}],
             "parentage_level": [{"value": "parent"}],
@@ -207,7 +207,7 @@ def generate_amazon_json_feed(title, image_url):
             "bullet_point": [{"value": b} for b in BULLETS],
             "target_gender": [{"value": "female"}],
             "age_range_description": [{"value": "Infant"}],
-            "material": [{"value": "Cotton"}, {"value": "Spandex"}],
+            "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
             "variation_theme": [{"name": "SIZE/COLOR"}],
             "parentage_level": [{"value": "child"}],
@@ -228,14 +228,16 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
+            "merchant_shipping_group_name": [{"value": "Onesie Template"}],
+            "handling_time": [{"value": 2, "unit": "business_days"}],
             "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
                         "item_package_dimensions": [{
-                "length": {"value": 25.4, "unit": "centimeters"},
-                "width": {"value": 20.32, "unit": "centimeters"},
-                "height": {"value": 2.54, "unit": "centimeters"}
+                "length": {"value": 3, "unit": "inches"},
+                "width": {"value": 3, "unit": "inches"},
+                "height": {"value": 1, "unit": "inches"}
             }],
-            "item_package_weight": [{"value": 0.12, "unit": "kilograms"}],
+            "item_package_weight": [{"value": 3, "unit": "oz"}],
             "main_product_image_locator": [{
                 "media_location": image_url,
                 "marketplace_id": "ATVPDKIKX0DER"
