@@ -228,8 +228,7 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            "merchant_shipping_group_name": [{"value": "Onesie Template"}],
-            "handling_time": [{"value": 2, "unit": "business_days"}],
+            "handling_time": [{"value": 2}],
             "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
                         "item_package_dimensions": [{
