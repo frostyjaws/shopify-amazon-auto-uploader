@@ -1,38 +1,3 @@
-Skip to content
-Navigation Menu
-frostyjaws
-shopify-amazon-auto-uploader
-
-Type / to search
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-Files
-Go to file
-t
-.devcontainer
-cloudinary_test
-requirements.txt
-streamlit_app.py
-shopify-amazon-auto-uploader
-/streamlit_app.py
-frostyjaws
-frostyjaws
-Update streamlit_app.py
-4454048
- · 
-2 hours ago
-
-Code
-
-Blame
-371 lines (330 loc) · 17.8 KB
 import streamlit as st
 import requests
 import os
@@ -227,7 +192,7 @@ def generate_amazon_json_feed(title, image_url):
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
                 ][i],
                 "marketplace_id": "ATVPDKIKX0DER"
@@ -404,4 +369,3 @@ if uploaded_file:
                 st.warning("⚠️ Feed not processed yet. Please check again later.")
         except Exception as e:
             st.error(f"❌ Error: {e}")
-shopify-amazon-auto-uploader/streamlit_app.py at 445404867c46d2870ac5011ef67400c53acb8509 · frostyjaws/shopify-amazon-auto-uploader 
