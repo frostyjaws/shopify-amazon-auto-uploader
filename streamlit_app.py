@@ -330,7 +330,7 @@ def download_amazon_processing_report(feed_status, access_token):
 # === UI ===
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
-uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
+uploaded_files = st.file_uploader("Upload PNG Files (Hold Ctrl or Shift to select multiple)", type="png", accept_multiple_files=True)
 
 
 if uploaded_files:
