@@ -422,8 +422,14 @@ if uploaded_files:
             "messages": all_messages
         }
 
-        st.info("📤 Submitting combined feed to Amazon...")
-        feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
+        st.code(json.dumps(full_feed, indent=2), language='json')
+st.info("📤 Submitting combined feed to Amazon...")
+        try:
+    feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
+except requests.exceptions.HTTPError as e:
+    st.error("🚨 Amazon Feed Submission Failed")
+    st.code(e.response.text, language='json')
+    raise
         st.success(f"✅ Batch Amazon Feed Submitted — Feed ID: {feed_id}")
 
         # Step 4: Submit inventory feed for all SKUs
