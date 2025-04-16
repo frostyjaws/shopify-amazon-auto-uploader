@@ -50,7 +50,7 @@ VARIATIONS = [
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
-uploaded_file.seek(0)
+    uploaded_file.seek(0)
 imgbb_url = "https://api.imgbb.com/1/upload"
 files = {
 "key": (None, IMGBB_API_KEY),
@@ -84,7 +84,7 @@ shopify_image_url = shopify_product["product"]["images"][0]["src"]
 return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
-import random
+    import random
 import json
 
 variations = [
@@ -98,11 +98,11 @@ variations = [
 ]
 
 def format_slug(title):
-slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
+    slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
 return f"{slug}-{random.randint(1000, 9999)}"
 
 def format_variation_sku(slug, variation):
-parts = variation.split()
+    parts = variation.split()
 size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
 .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
 .replace("18M", "18M").replace("24M", "24M")
@@ -111,12 +111,12 @@ sleeve = "SS" if "Short" in variation else "LS"
 return f"{slug}-{size}-{color}-{sleeve}"
 
 def extract_color_and_sleeve(variation):
-color_map = "White"
+    color_map = "White"
 sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
 for word in variation.split():
-if word.lower() in ["white", "pink", "blue", "natural"]:
-color_map = word.capitalize()
-return color_map, sleeve_type
+    if word.lower() in ["white", "pink", "blue", "natural"]:
+        color_map = word.capitalize()
+    return color_map, sleeve_type
 
 slug = format_slug(title)
 
@@ -183,7 +183,7 @@ messages = [{
 }]
 
 for idx, variation in enumerate(variations, start=2):
-sku = format_variation_sku(slug, variation)
+    sku = format_variation_sku(slug, variation)
 color_map, sleeve_type = extract_color_and_sleeve(variation)
 
 other_product_images = {
@@ -272,7 +272,7 @@ return json.dumps({
 }, indent=2)
 
 def get_amazon_access_token():
-r = requests.post("https://api.amazon.com/auth/o2/token", data={
+    r = requests.post("https://api.amazon.com/auth/o2/token", data={
 "grant_type": "refresh_token",
 "refresh_token": REFRESH_TOKEN,
 "client_id": LWA_CLIENT_ID,
@@ -282,7 +282,7 @@ r.raise_for_status()
 return r.json()["access_token"]
 
 def submit_amazon_json_feed(json_feed, access_token):
-doc_res = requests.post(
+    doc_res = requests.post(
 "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
 headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
 json={"contentType": "application/json"}
@@ -306,7 +306,7 @@ feed_res.raise_for_status()
 return feed_res.json()["feedId"]
 
 def check_amazon_feed_status(feed_id, access_token):
-res = requests.get(
+    res = requests.get(
 f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}",
 headers={"x-amz-access-token": access_token, "Content-Type": "application/json"}
 )
@@ -314,9 +314,9 @@ res.raise_for_status()
 return res.json()
 
 def download_amazon_processing_report(feed_status, access_token):
-doc_id = feed_status.get("resultFeedDocumentId")
+    doc_id = feed_status.get("resultFeedDocumentId")
 if not doc_id:
-return "Processing report not available yet."
+    return "Processing report not available yet."
 
 doc_info = requests.get(
 f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents/{doc_id}",
@@ -330,7 +330,7 @@ return report.text
 # === UI ===
 
 def submit_inventory_feed(sku_list, access_token, marketplace_id, seller_id):
-inventory_feed = {
+    inventory_feed = {
 "header": {
 "sellerId": seller_id,
 "version": "2.0",
@@ -340,7 +340,7 @@ inventory_feed = {
 }
 
 for i, sku in enumerate(sku_list, start=1):
-inventory_feed["messages"].append({
+    inventory_feed["messages"].append({
 "messageId": i,
 "operationType": "UPDATE",
 "sku": sku,
@@ -384,18 +384,18 @@ uploaded_files = st.file_uploader("Upload PNG Files (Hold Ctrl or Shift to selec
 
 
 if uploaded_files:
-if len(uploaded_files) == 1:
-# Process single file as usual
-uploaded_file = uploaded_files[0]
+    if len(uploaded_files) == 1:
+        # Process single file as usual
+    uploaded_file = uploaded_files[0]
 
 else:
-st.info("🔄 Multiple PNGs detected — preparing a single Amazon feed for all...")
+    st.info("🔄 Multiple PNGs detected — preparing a single Amazon feed for all...")
 all_messages = []
 image_urls = {}
 
 # Step 1: Upload all images to ImgBB + Shopify
 for uploaded_file in uploaded_files:
-file_stem = os.path.splitext(uploaded_file.name)[0]
+    file_stem = os.path.splitext(uploaded_file.name)[0]
 title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
 handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
 
@@ -406,7 +406,7 @@ image_urls[file_stem] = image_url
 
 # Step 2: Generate all Amazon messages (but don’t submit yet)
 for uploaded_file in uploaded_files:
-file_stem = os.path.splitext(uploaded_file.name)[0]
+    file_stem = os.path.splitext(uploaded_file.name)[0]
 image_url = image_urls[file_stem]
 partial_feed = json.loads(generate_amazon_json_feed(file_stem, image_url))
 all_messages.extend(partial_feed["messages"])
@@ -424,14 +424,14 @@ full_feed = {
 
 # Reassign unique messageIds across all messages to avoid Amazon rejection
 for idx, msg in enumerate(all_messages, start=1):
-msg["messageId"] = idx
+    msg["messageId"] = idx
 
 st.code(json.dumps(full_feed, indent=2), language='json')
 st.info("📤 Submitting combined feed to Amazon...")
 try:
-feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
+    feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
 except requests.exceptions.HTTPError as e:
-st.error("🚨 Amazon Feed Submission Failed")
+    st.error("🚨 Amazon Feed Submission Failed")
 st.code(e.response.text, language='json')
 raise
 st.success(f"✅ Batch Amazon Feed Submitted — Feed ID: {feed_id}")
@@ -443,7 +443,7 @@ st.success(f"📦 Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
 st.stop()
 
 if st.button("📤 Submit to Shopify + Amazon"):
-st.info("🔹 Starting process...")
+    st.info("🔹 Starting process...")
 uploaded_file.seek(0)
 image = Image.open(uploaded_file)
 file_stem = os.path.splitext(uploaded_file.name)[0]
@@ -452,7 +452,7 @@ handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit
 st.image(image, caption=title_full, use_container_width=True)
 st.info("🔹 Image loaded, beginning Shopify upload...")
 try:
-st.info("Uploading to ImgBB + Creating product on Shopify...")
+    st.info("Uploading to ImgBB + Creating product on Shopify...")
 uploaded_file.seek(0)
 image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
 st.success("✅ Shopify Product Created")
@@ -467,10 +467,10 @@ st.info("Checking Feed Status...")
 status = check_amazon_feed_status(feed_id, token)
 st.code(json.dumps(status, indent=2))
 if status.get("processingStatus") == "DONE":
-st.info("Downloading Processing Report...")
+    st.info("Downloading Processing Report...")
 report = download_amazon_processing_report(status, token)
 st.code(report)
 else:
-st.warning("⚠️ Feed not processed yet. Please check again later.")
+    st.warning("⚠️ Feed not processed yet. Please check again later.")
 except Exception as e:
-st.error(f"❌ Error: {e}")
+    st.error(f"❌ Error: {e}")
