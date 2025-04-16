@@ -382,16 +382,6 @@ if uploaded_files:
         st.success(f"📦 Inventory Feed Submitted — Feed ID: {inventory_feed_id}")
         st.stop()
 
-            st.markdown(f"---\n### 📦 Processing: `{uploaded_file.name}`")
-            st.info(f"🕒 Waiting for safe upload window...")
-
-            import time
-            COUNTDOWN = 5  # seconds between uploads
-            for remaining in range(COUNTDOWN, 0, -1):
-                st.write(f"Starting in {remaining} seconds...")
-                time.sleep(1)
-
-
         if st.button("📤 Submit to Shopify + Amazon"):
             st.info("🔹 Starting process...")
             uploaded_file.seek(0)
