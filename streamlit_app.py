@@ -422,6 +422,10 @@ if uploaded_files:
             "messages": all_messages
         }
 
+        # Reassign unique messageIds across all messages to avoid Amazon rejection
+        for idx, msg in enumerate(all_messages, start=1):
+            msg["messageId"] = idx
+
         st.code(json.dumps(full_feed, indent=2), language='json')
 st.info("📤 Submitting combined feed to Amazon...")
         try:
