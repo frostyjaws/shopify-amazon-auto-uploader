@@ -380,7 +380,6 @@ if uploaded_files:
 
         except Exception as e:
             st.error(f"❌ Error submitting feed to Amazon: {e}")
-if uploaded_file:
     if st.button("📤 Submit to Shopify + Amazon"):
         st.info("🔹 Starting process...")
         uploaded_file.seek(0)
