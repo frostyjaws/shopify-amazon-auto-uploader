@@ -374,7 +374,6 @@ if uploaded_files:
                 "messages": all_messages
             }
 
-            st.code(json.dumps(full_feed, indent=2), language='json')
             feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
