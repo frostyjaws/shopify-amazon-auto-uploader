@@ -429,8 +429,8 @@ if uploaded_files:
         st.code(json.dumps(full_feed, indent=2), language='json')
 st.info("📤 Submitting combined feed to Amazon...")
         try:
-    feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
-except requests.exceptions.HTTPError as e:
+            feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
+        except requests.exceptions.HTTPError as e:
     st.error("🚨 Amazon Feed Submission Failed")
     st.code(e.response.text, language='json')
     raise
@@ -451,31 +451,26 @@ except requests.exceptions.HTTPError as e:
             handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
             st.image(image, caption=title_full, use_container_width=True)
             st.info("🔹 Image loaded, beginning Shopify upload...")
-            try:
-                st.info("Uploading to ImgBB + Creating product on Shopify...")
-                uploaded_file.seek(0)
-                image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
-
-                st.success("✅ Shopify Product Created")
-
-                st.info("Generating Amazon Feed...")
-                token = get_amazon_access_token()
-                json_feed = generate_amazon_json_feed(file_stem, image_url)
-                # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
-
-                st.info("Submitting Feed to Amazon...")
-                feed_id = submit_amazon_json_feed(json_feed, token)
-                st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
-
-                st.info("Checking Feed Status...")
-                status = check_amazon_feed_status(feed_id, token)
-                st.code(json.dumps(status, indent=2))
-
-                if status.get("processingStatus") == "DONE":
-                    st.info("Downloading Processing Report...")
-                    report = download_amazon_processing_report(status, token)
-                    st.code(report)
-                else:
-                    st.warning("⚠️ Feed not processed yet. Please check again later.")
-            except Exception as e:
+        try:
+            st.info("Uploading to ImgBB + Creating product on Shopify...")
+            uploaded_file.seek(0)
+            image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
+                        st.success("✅ Shopify Product Created")
+                        st.info("Generating Amazon Feed...")
+            token = get_amazon_access_token()
+            json_feed = generate_amazon_json_feed(file_stem, image_url)
+            # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
+                        st.info("Submitting Feed to Amazon...")
+            feed_id = submit_amazon_json_feed(json_feed, token)
+            st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+                        st.info("Checking Feed Status...")
+            status = check_amazon_feed_status(feed_id, token)
+            st.code(json.dumps(status, indent=2))
+                        if status.get("processingStatus") == "DONE":
+            st.info("Downloading Processing Report...")
+            report = download_amazon_processing_report(status, token)
+            st.code(report)
+            else:
+            st.warning("⚠️ Feed not processed yet. Please check again later.")
+        except Exception as e:
                 st.error(f"❌ Error: {e}")
