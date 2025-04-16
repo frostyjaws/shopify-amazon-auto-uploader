@@ -362,7 +362,7 @@ if uploaded_files:
             all_messages.extend(partial_feed["messages"])
 
         # Step 3: Submit one single Amazon feed
-        token = get_access_token()
+        token = get_amazon_access_token()
         full_feed = {
             "header": {
                 "sellerId": SELLER_ID,
