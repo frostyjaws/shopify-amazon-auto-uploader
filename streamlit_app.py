@@ -328,6 +328,56 @@ def download_amazon_processing_report(feed_status, access_token):
     return report.text
 
 # === UI ===
+
+def submit_inventory_feed(sku_list, access_token, marketplace_id, seller_id):
+    inventory_feed = {
+        "header": {
+            "sellerId": seller_id,
+            "version": "2.0",
+            "issueLocale": "en_US"
+        },
+        "messages": []
+    }
+
+    for i, sku in enumerate(sku_list, start=1):
+        inventory_feed["messages"].append({
+            "messageId": i,
+            "operationType": "UPDATE",
+            "sku": sku,
+            "productType": "LEOTARD",
+            "attributes": {
+                "fulfillment_availability": [{
+                    "fulfillment_channel_code": "DEFAULT",
+                    "quantity": 999,
+                    "handling_time": {"value": 2}
+                }]
+            }
+        })
+
+    doc_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+        json={"contentType": "application/json"}
+    )
+    doc_res.raise_for_status()
+    doc = doc_res.json()
+
+    upload = requests.put(doc["url"], data=json.dumps(inventory_feed).encode("utf-8"), headers={"Content-Type": "application/json"})
+    upload.raise_for_status()
+
+    feed_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
+        json={
+            "feedType": "POST_INVENTORY_AVAILABILITY_DATA",
+            "marketplaceIds": [marketplace_id],
+            "inputFeedDocumentId": doc["feedDocumentId"]
+        }
+    )
+    feed_res.raise_for_status()
+    return feed_res.json()["feedId"]
+
+
 st.title("🍼 Upload PNG → List to Shopify + Amazon")
 
 uploaded_files = st.file_uploader("Upload PNG Files (Hold Ctrl or Shift to select multiple)", type="png", accept_multiple_files=True)
