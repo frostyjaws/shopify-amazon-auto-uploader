@@ -1,3 +1,4 @@
+
 def submit_inventory_feed(sku_list, access_token, marketplace_id, seller_id):
     inventory_feed = {
         "header": {
@@ -400,8 +401,6 @@ if uploaded_files:
             json_feed = json.loads(generate_amazon_json_feed(file_stem, image_url))
             all_messages.extend(json_feed["messages"])
             for msg in json_feed["messages"]:
-                if msg.get("sku"):
-                    all_skus.append(msg["sku"])
         except Exception as e:
             st.error(f"❌ Error processing {uploaded_file.name}: {e}")
 
