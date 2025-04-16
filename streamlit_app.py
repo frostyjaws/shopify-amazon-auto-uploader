@@ -50,7 +50,7 @@ VARIATIONS = [
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
-    uploaded_file.seek(0)
+uploaded_file.seek(0)
 imgbb_url = "https://api.imgbb.com/1/upload"
 files = {
 "key": (None, IMGBB_API_KEY),
@@ -84,7 +84,7 @@ shopify_image_url = shopify_product["product"]["images"][0]["src"]
 return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
-    import random
+import random
 import json
 
 variations = [
@@ -98,11 +98,11 @@ variations = [
 ]
 
 def format_slug(title):
-    slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
+slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
 return f"{slug}-{random.randint(1000, 9999)}"
 
 def format_variation_sku(slug, variation):
-    parts = variation.split()
+parts = variation.split()
 size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
 .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
 .replace("18M", "18M").replace("24M", "24M")
@@ -111,7 +111,7 @@ sleeve = "SS" if "Short" in variation else "LS"
 return f"{slug}-{size}-{color}-{sleeve}"
 
 def extract_color_and_sleeve(variation):
-    color_map = "White"
+color_map = "White"
 sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
 for word in variation.split():
 if word.lower() in ["white", "pink", "blue", "natural"]:
@@ -272,7 +272,7 @@ return json.dumps({
 }, indent=2)
 
 def get_amazon_access_token():
-    r = requests.post("https://api.amazon.com/auth/o2/token", data={
+r = requests.post("https://api.amazon.com/auth/o2/token", data={
 "grant_type": "refresh_token",
 "refresh_token": REFRESH_TOKEN,
 "client_id": LWA_CLIENT_ID,
@@ -282,7 +282,7 @@ r.raise_for_status()
 return r.json()["access_token"]
 
 def submit_amazon_json_feed(json_feed, access_token):
-    doc_res = requests.post(
+doc_res = requests.post(
 "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
 headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
 json={"contentType": "application/json"}
@@ -306,7 +306,7 @@ feed_res.raise_for_status()
 return feed_res.json()["feedId"]
 
 def check_amazon_feed_status(feed_id, access_token):
-    res = requests.get(
+res = requests.get(
 f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}",
 headers={"x-amz-access-token": access_token, "Content-Type": "application/json"}
 )
@@ -314,7 +314,7 @@ res.raise_for_status()
 return res.json()
 
 def download_amazon_processing_report(feed_status, access_token):
-    doc_id = feed_status.get("resultFeedDocumentId")
+doc_id = feed_status.get("resultFeedDocumentId")
 if not doc_id:
 return "Processing report not available yet."
 
@@ -330,7 +330,7 @@ return report.text
 # === UI ===
 
 def submit_inventory_feed(sku_list, access_token, marketplace_id, seller_id):
-    inventory_feed = {
+inventory_feed = {
 "header": {
 "sellerId": seller_id,
 "version": "2.0",
