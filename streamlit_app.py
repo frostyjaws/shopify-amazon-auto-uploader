@@ -185,11 +185,6 @@ def generate_amazon_json_feed(title, image_url):
             "main_product_image_locator": [{
                 "media_location": image_url,
                 "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            "variation_data": [{
-                "color": ["White", "Natural", "Pink", "Blue"],
-                "size": ["Newborn", "0-3M", "3-6M", "6M", "6-9M", "12M", "18M", "24M"],
-                "style": ["Short Sleeve", "Long Sleeve"]
             }]
         }
     }]
