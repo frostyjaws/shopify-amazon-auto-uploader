@@ -178,7 +178,19 @@ def generate_amazon_json_feed(title, image_url):
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+            "color": [{"value": "multi"}],
+            "size": [{"value": "Newborn"}],
+            "style": [{"value": "Short Sleeve"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            "variation_data": [{
+                "color": ["White", "Natural", "Pink", "Blue"],
+                "size": ["Newborn", "0-3M", "3-6M", "6M", "6-9M", "12M", "18M", "24M"],
+                "style": ["Short Sleeve", "Long Sleeve"]
+            }]
         }
     }]
 
@@ -191,8 +203,10 @@ def generate_amazon_json_feed(title, image_url):
                 "media_location": [
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
                     "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115"
-                ][i % 3],
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
+                ][i],
                 "marketplace_id": "ATVPDKIKX0DER"
             }] for i in range(5)
         }
@@ -226,9 +240,9 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": "multi"}],
+            "color": [{"value": color_map}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
-                        "item_package_dimensions": [{
+            "item_package_dimensions": [{
                 "length": {"value": 3, "unit": "inches"},
                 "width": {"value": 3, "unit": "inches"},
                 "height": {"value": 1, "unit": "inches"}
