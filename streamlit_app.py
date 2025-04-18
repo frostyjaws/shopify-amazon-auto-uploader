@@ -160,7 +160,7 @@ def generate_amazon_json_feed(title, image_url):
         "requirements": "LISTING",
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-            "brand": [{"value": "NOFO VIBES"}],
+            "brand_name": [{"value": "NOFO VIBES"}],
             "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
             "product_description": [{"value": DESCRIPTION}],
             "bullet_point": [{"value": b} for b in BULLETS],
@@ -173,8 +173,6 @@ def generate_amazon_json_feed(title, image_url):
             "model_name": [{"value": title}],
             "import_designation": [{"value": "Imported"}],
             "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}],
-            "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
@@ -191,6 +189,9 @@ def generate_amazon_json_feed(title, image_url):
                 {"sku": format_variation_sku(slug, variation), "type": "CHILD"}
                 for variation in variations
             ]
+        },
+        "condition": {
+            "condition_type": "new_new"
         }
     }]
 
