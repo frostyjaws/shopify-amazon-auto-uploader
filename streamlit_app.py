@@ -87,16 +87,6 @@ def generate_amazon_json_feed(title, image_url):
     import random
     import json
     
-    variations = [
-    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
-    ]
-    
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
         return f"{slug}-{random.randint(1000, 9999)}"
@@ -182,7 +172,7 @@ def generate_amazon_json_feed(title, image_url):
         }
     }]
     
-    for idx, variation in enumerate(variations, start=2):
+    for idx, variation in enumerate(VARIATIONS, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
         
@@ -400,7 +390,6 @@ if uploaded_files:
             def generate_child_variations(title, image_url, parent_sku, start_message_id):
                 import json
                 
-                # Define helper functions
                 def format_slug(title):
                     slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
                     return f"{slug}-{random.randint(1000, 9999)}"
@@ -457,15 +446,19 @@ if uploaded_files:
                 child_messages = []
                 current_message_id = start_message_id
                 
-                # Get a subset of variations to avoid too many variations per design
-                selected_variations = [
-                    "Newborn White Short Sleeve",
-                    "0-3M White Short Sleeve",
-                    "6-9M White Short Sleeve",
-                    "12M White Short Sleeve"
+                # Use all variations instead of a limited subset
+                variations = [
+                    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+                    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+                    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+                    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+                    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+                    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+                    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
                 ]
                 
-                for variation in selected_variations:
+                # Remove the limited selected_variations and use all variations
+                for variation in variations:
                     sku = format_variation_sku(slug, variation)
                     color_map, sleeve_type = extract_color_and_sleeve(variation)
                     
