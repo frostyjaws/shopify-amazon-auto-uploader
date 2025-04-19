@@ -108,6 +108,13 @@ def generate_amazon_json_feed(title, image_url):
                 color_map = word.capitalize()
         return color_map, sleeve_type
 
+    def parse_variation(variation_str):
+        parts = variation_str.split()
+        size = parts[0]
+        color = next((c for c in ["White", "Natural", "Pink", "Blue"] if c in variation_str), "White")
+        sleeve = "Short Sleeve" if "Short" in variation_str else "Long Sleeve"
+        return size, color, sleeve
+
     slug = format_slug(title)
 
     price_map = {
@@ -158,7 +165,7 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"value": "Size-Color-StyleName", "marketplace_id": "ATVPDKIKX0DER"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": title}],
             "model_name": [{"value": title}],
@@ -193,8 +200,9 @@ def generate_amazon_json_feed(title, image_url):
                 "marketplace_id": "ATVPDKIKX0DER"
             }]
         
+        size, color, sleeve = parse_variation(variation)
         attributes = {
-            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "item_name": [{"value": f"{title} - {color} / {size} / {sleeve}"}],
             "brand": [{"value": "NOFO VIBES"}],
             "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
             "product_description": [{"value": DESCRIPTION}],
@@ -203,14 +211,15 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"value": "Size-Color-StyleName", "marketplace_id": "ATVPDKIKX0DER"}],
             "parentage_level": [{"value": "child"}],
             "child_parent_sku_relationship": [{
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            "size": [{"value": variation}],
-            "style": [{"value": sleeve_type}],
+            "size_name": [{"value": size, "marketplace_id": "ATVPDKIKX0DER"}],
+            "color": [{"value": color, "marketplace_id": "ATVPDKIKX0DER"}],
+            "style_name": [{"value": sleeve, "marketplace_id": "ATVPDKIKX0DER"}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
             "import_designation": [{"value": "Made in USA"}],
@@ -222,7 +231,6 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": "multi"}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
                 "length": {"value": 3, "unit": "inches"},
@@ -353,7 +361,7 @@ if uploaded_files:
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"value": "Size-Color-StyleName", "marketplace_id": "ATVPDKIKX0DER"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "BabyBodysuit"}],
             "model_name": [{"value": "Baby Bodysuit"}],
@@ -410,6 +418,13 @@ if uploaded_files:
                         if word.lower() in ["white", "pink", "blue", "natural"]:
                             color_map = word.capitalize()
                     return color_map, sleeve_type
+                
+                def parse_variation(variation_str):
+                    parts = variation_str.split()
+                    size = parts[0]
+                    color = next((c for c in ["White", "Natural", "Pink", "Blue"] if c in variation_str), "White")
+                    sleeve = "Short Sleeve" if "Short" in variation_str else "Long Sleeve"
+                    return size, color, sleeve
                 
                 slug = format_slug(title)
                 
@@ -479,8 +494,9 @@ if uploaded_files:
                             "marketplace_id": "ATVPDKIKX0DER"
                         }]
                     
+                    size, color, sleeve = parse_variation(variation)
                     attributes = {
-                        "item_name": [{"value": f"{title} - {color_map} / {variation.split()[0]}"}],
+                        "item_name": [{"value": f"{title} - {color} / {size} / {sleeve}"}],
                         "brand": [{"value": "NOFO VIBES"}],
                         "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
                         "product_description": [{"value": DESCRIPTION}],
@@ -489,14 +505,15 @@ if uploaded_files:
                         "age_range_description": [{"value": "Infant"}],
                         "material": [{"value": "Cotton"}],
                         "department": [{"value": "Baby Girls"}],
-                        "variation_theme": [{"name": "SIZE/COLOR"}],
+                        "variation_theme": [{"value": "Size-Color-StyleName", "marketplace_id": "ATVPDKIKX0DER"}],
                         "parentage_level": [{"value": "child"}],
                         "child_parent_sku_relationship": [{
                             "child_relationship_type": "variation",
                             "parent_sku": parent_sku
                         }],
-                        "size": [{"value": variation.split()[0]}],
-                        "style": [{"value": sleeve_type}],
+                        "size_name": [{"value": size, "marketplace_id": "ATVPDKIKX0DER"}],
+                        "color": [{"value": color, "marketplace_id": "ATVPDKIKX0DER"}],
+                        "style_name": [{"value": sleeve, "marketplace_id": "ATVPDKIKX0DER"}],
                         "model_number": [{"value": "CrewNeckBodysuit"}],
                         "model_name": [{"value": "Crew Neck Bodysuit"}],
                         "import_designation": [{"value": "Made in USA"}],
@@ -508,7 +525,6 @@ if uploaded_files:
                         "supplier_declared_has_product_identifier_exemption": [{"value": True}],
                         "care_instructions": [{"value": "Machine Wash"}],
                         "sleeve": [{"value": sleeve_type}],
-                        "color": [{"value": "multi"}],
                         "list_price": [{"currency": "USD", "value": price_map[variation]}],
                         "item_package_dimensions": [{
                             "length": {"value": 3, "unit": "inches"},
