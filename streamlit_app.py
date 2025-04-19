@@ -4,7 +4,6 @@ import os
 import json
 from PIL import Image
 from io import BytesIO
-import random
 
 # === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
@@ -17,31 +16,37 @@ MARKETPLACE_ID = st.secrets["MARKETPLACE_ID"]
 SELLER_ID = st.secrets["SELLER_ID"]
 
 DESCRIPTION = """
-<p>Celebrate the arrival of your little one with our adorable Custom Baby onesie®, the perfect baby shower gift that will be cherished for years to come. This charming piece of baby clothing is an ideal new baby gift for welcoming a newborn into the world. Whether it's for a baby announcement, a pregnancy reveal, or a special baby shower, this baby onesie® is sure to delight.</p>
-<p>Our Custom Baby onesie® features a playful and cute design, perfect for showcasing your baby's unique personality. Made with love and care, this baby onesie® is designed to keep your baby comfortable and stylish. It's an essential item in cute baby clothes, making it a standout piece for any new arrival.</p>
-<p>Perfect for both baby boys and girls, this versatile baby onesie® is soft, comfortable, and durable, ensuring it can withstand numerous washes. The easy-to-use snaps make changing a breeze, providing convenience for busy parents.</p>
-<p>Whether you're looking for a personalized baby onesie®, a funny baby onesie®, or a cute baby onesie®, this Custom Baby onesie® has it all. It's ideal for celebrating the excitement of a new baby, featuring charming and customizable designs. This makes it a fantastic option for funny baby clothes that bring a smile to everyone's face.</p>
-<p>Imagine gifting this delightful baby onesie® at a baby shower or using it as a memorable baby announcement or pregnancy reveal. It's perfect for anyone searching for a unique baby gift, announcement baby onesie®, or a special new baby onesie®.</p>
-<p>This baby onesie® is not just an item of clothing; it's a keepsake that celebrates the joy and wonder of a new life.</p>
-<p>From baby boy clothes to baby girl clothes, this baby onesie® is perfect for any newborn. Whether it's a boho design, a Father's Day gift, or custom baby clothes, this piece is a wonderful addition to any baby's wardrobe.</p>
+<p>Celebrate the arrival of your little one with our adorable Custom Baby onesie&reg;, the perfect baby shower gift that will be cherished for years to come. This charming piece of baby clothing is an ideal new baby gift for welcoming a newborn into the world. Whether it's for a baby announcement, a pregnancy reveal, or a special baby shower, this baby onesie&reg; is sure to delight.</p>
+
+<p>Our Custom Baby onesie&reg; features a playful and cute design, perfect for showcasing your baby's unique personality. Made with love and care, this baby onesie&reg; is designed to keep your baby comfortable and stylish. It's an essential item in cute baby clothes, making it a standout piece for any new arrival.</p>
+
+<p>Perfect for both baby boys and girls, this versatile baby onesie&reg; is soft, comfortable, and durable, ensuring it can withstand numerous washes. The easy-to-use snaps make changing a breeze, providing convenience for busy parents.</p>
+
+<p>Whether you're looking for a personalized baby onesie&reg;, a funny baby onesie&reg;, or a cute baby onesie&reg;, this Custom Baby onesie&reg; has it all. It's ideal for celebrating the excitement of a new baby, featuring charming and customizable designs. This makes it a fantastic option for funny baby clothes that bring a smile to everyone's face.</p>
+
+<p>Imagine gifting this delightful baby onesie&reg; at a baby shower or using it as a memorable baby announcement or pregnancy reveal. It's perfect for anyone searching for a unique baby gift, announcement baby onesie&reg;, or a special new baby onesie&reg;.</p>
+
+<p>This baby onesie&reg; is not just an item of clothing; it's a keepsake that celebrates the joy and wonder of a new life.</p>
+
+<p>From baby boy clothes to baby girl clothes, this baby onesie&reg; is perfect for any newborn. Whether it's a boho design, a Father's Day gift, or custom baby clothes, this piece is a wonderful addition to any baby's wardrobe.</p>
 """
 
 BULLETS =  [
-    "🎨 High-Quality Ink Printing: Our Baby Bodysuit features vibrant, long-lasting colors thanks to direct-to-garment printing, ensuring that your baby's outfit looks fantastic wash after wash.",
-    "🎖️ Proudly Veteran-Owned: Show your support for our heroes while dressing your little one in style with this adorable newborn romper from a veteran-owned small business.",
-    "👶 Comfort and Convenience: Crafted from soft, breathable materials, this Bodysuit provides maximum comfort for your baby. Plus, the convenient snap closure makes diaper changes a breeze.",
-    "🎁 Perfect Baby Shower Gift: This funny Baby Bodysuit makes for an excellent baby shower gift or a thoughtful present for any new parents. It's a sweet and meaningful addition to any baby's wardrobe.",
-    "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
+"🎨 High-Quality Ink Printing: Our Baby Bodysuit features vibrant, long-lasting colors thanks to direct-to-garment printing, ensuring that your baby's outfit looks fantastic wash after wash.",
+"🎖️ Proudly Veteran-Owned: Show your support for our heroes while dressing your little one in style with this adorable newborn romper from a veteran-owned small business.",
+"👶 Comfort and Convenience: Crafted from soft, breathable materials, this Bodysuit provides maximum comfort for your baby. Plus, the convenient snap closure makes diaper changes a breeze.",
+"🎁 Perfect Baby Shower Gift: This funny Baby Bodysuit makes for an excellent baby shower gift or a thoughtful present for any new parents. It's a sweet and meaningful addition to any baby's wardrobe.",
+"📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
 VARIATIONS = [
-    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+"Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+"0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+"3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+"6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+"6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+"12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+"18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
@@ -79,7 +84,19 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
-
+    import random
+    import json
+    
+    variations = [
+    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
+    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
+    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
+    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
+    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
+    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
+    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    ]
+    
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
         return f"{slug}-{random.randint(1000, 9999)}"
@@ -134,193 +151,121 @@ def generate_amazon_json_feed(title, image_url):
     }
 
     parent_sku = f"{slug}-PARENT"
-    messages = []
     
-    # Create parent message
-    parent_message = {
+    messages = [{
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
         "productType": "LEOTARD",
         "requirements": "LISTING",
         "attributes": {
-            "item_name": [
-                {
-                    "value": f"{title} - Baby Bodysuit (Parent)",
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
-            "brand_name": [
-                {
-                    "value": "NOFO VIBES",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
-            "condition_type": [
-                {
-                    "value": "new_new",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
-            "variation_theme": [
-                {
-                    "value": "SizeColor",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
-            "bullet_point": [
-                {
-                    "value": BULLETS[0],
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                },
-                {
-                    "value": BULLETS[1],
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                },
-                {
-                    "value": BULLETS[2],
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                },
-                {
-                    "value": BULLETS[3],
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                },
-                {
-                    "value": BULLETS[4],
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
-            "product_description": [
-                {
-                    "value": DESCRIPTION,
-                    "language_tag": "en_US",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ]
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material": [{"value": "Cotton"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "parent"}],
+            "model_number": [{"value": title}],
+            "model_name": [{"value": title}],
+            "import_designation": [{"value": "Imported"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
         }
-    }
-    messages.append(parent_message)
-
-    # Create child messages
-    for idx, variation in enumerate(VARIATIONS, start=2):
+    }]
+    
+    for idx, variation in enumerate(variations, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
         
-        child_message = {
+        # Define alt images statically to avoid issues with dynamic content
+        alt_images = [
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
+        ]
+        
+        # Create other_product_images dictionary with safe access to alt_images
+        other_product_images = {}
+        for i in range(min(5, len(alt_images))):
+            other_product_images[f"other_product_image_locator_{i+1}"] = [{
+                "media_location": alt_images[i],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }]
+        
+        attributes = {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material": [{"value": "Cotton"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "child"}],
+            "child_parent_sku_relationship": [{
+                "child_relationship_type": "variation",
+                "parent_sku": parent_sku
+            }],
+            "size": [{"value": variation}],
+            "style": [{"value": sleeve_type}],
+            "model_number": [{"value": "CrewNeckBodysuit"}],
+            "model_name": [{"value": "Crew Neck Bodysuit"}],
+            "import_designation": [{"value": "Made in USA"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+            "care_instructions": [{"value": "Machine Wash"}],
+            "sleeve": [{"value": sleeve_type}],
+            "color": [{"value": "multi"}],
+            "list_price": [{"currency": "USD", "value": price_map[variation]}],
+            "item_package_dimensions": [{
+                "length": {"value": 3, "unit": "inches"},
+                "width": {"value": 3, "unit": "inches"},
+                "height": {"value": 1, "unit": "inches"}
+            }],
+            "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            **other_product_images,
+            "purchasable_offer": [{
+                "currency": "USD",
+                "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            "fulfillment_availability": [{
+                "quantity": 999,
+                "fulfillment_channel_code": "DEFAULT",
+                "marketplace_id": "ATVPDKIKX0DER"
+            }]
+        }
+        
+        messages.append({
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "LEOTARD",
             "requirements": "LISTING",
-            "attributes": {
-                "item_name": [
-                    {
-                        "value": f"{title} - {color_map} / {variation.split()[0]}",
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "brand_name": [
-                    {
-                        "value": "NOFO VIBES",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "color": [
-                    {
-                        "value": color_map,
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "size_name": [
-                    {
-                        "value": variation.split()[0],
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "condition_type": [
-                    {
-                        "value": "new_new",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "variation_theme": [
-                    {
-                        "value": "SizeColor",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "parent_sku": [
-                    {
-                        "value": parent_sku,
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "main_product_image_locator": [
-                    {
-                        "media_location": image_url,
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "fulfillment_availability": [
-                    {
-                        "quantity": 999,
-                        "fulfillment_channel_code": "DEFAULT",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "purchasable_offer": [
-                    {
-                        "currency": "USD",
-                        "our_price": [
-                            {
-                                "schedule": [
-                                    {
-                                        "value_with_tax": price_map[variation]
-                                    }
-                                ]
-                            }
-                        ],
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ],
-                "bullet_point": [
-                    {
-                        "value": BULLETS[0],
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    },
-                    {
-                        "value": BULLETS[1],
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    },
-                    {
-                        "value": BULLETS[2],
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    },
-                    {
-                        "value": BULLETS[3],
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    },
-                    {
-                        "value": BULLETS[4],
-                        "language_tag": "en_US",
-                        "marketplace_id": "ATVPDKIKX0DER"
-                    }
-                ]
-            }
-        }
-        messages.append(child_message)
-
+            "attributes": attributes
+        })
+    
     return json.dumps({
         "header": {
             "sellerId": SELLER_ID,
@@ -364,51 +309,66 @@ def submit_amazon_json_feed(json_feed, access_token):
     feed_res.raise_for_status()
     return feed_res.json()["feedId"]
 
-# === UI ===
-st.title("Shopify & Amazon Product Uploader")
+def check_amazon_feed_status(feed_id, access_token):
+    res = requests.get(
+        f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}",
+        headers={"x-amz-access-token": access_token, "Content-Type": "application/json"}
+    )
+    res.raise_for_status()
+    return res.json()
 
+def download_amazon_processing_report(feed_status, access_token):
+    doc_id = feed_status.get("resultFeedDocumentId")
+    if not doc_id:
+        return "Processing report not available yet."
+
+    doc_info = requests.get(
+        f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents/{doc_id}",
+        headers={"x-amz-access-token": access_token}
+    ).json()
+
+    report = requests.get(doc_info["url"])
+    report.raise_for_status()
+    return report.text
+
+# === UI ===
+
+# === MULTI FILE MODE ===
 uploaded_files = st.file_uploader("Upload PNG Files (Hold Ctrl or Shift to select multiple)", type="png", accept_multiple_files=True)
 
 if uploaded_files:
     all_messages = []
-    st.info(f"Processing {len(uploaded_files)} file(s)...")
-
+    all_skus = []
     for uploaded_file in uploaded_files:
         st.markdown(f"---\n### 📦 Processing: `{uploaded_file.name}`")
         try:
             file_stem = os.path.splitext(uploaded_file.name)[0]
             title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
             handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
-
             image = Image.open(uploaded_file)
-            st.image(image, caption=title_full, width=200)
-
-            st.write("Uploading to ImgBB + Creating product on Shopify...")
-            uploaded_file.seek(0) 
+            st.image(image, caption=title_full, use_container_width=True)
+            st.info("Uploading to ImgBB + Creating product on Shopify...")
+            uploaded_file.seek(0)
             image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
-            st.success(f"✅ Shopify Product Created for {uploaded_file.name}")
+            st.success("✅ Shopify Product Created")
 
-            st.write("Generating Amazon Feed data...")
-            json_feed_str = generate_amazon_json_feed(file_stem, image_url)
-            json_feed_data = json.loads(json_feed_str)
-            all_messages.extend(json_feed_data["messages"])
-            st.success(f"✅ Amazon Feed data generated for {uploaded_file.name}")
-
+            st.info("Generating Amazon Feed...")
+            json_feed = json.loads(generate_amazon_json_feed(file_stem, image_url))
+            all_messages.extend(json_feed["messages"])
+            for msg in json_feed["messages"]:
+                if msg.get("sku"):
+                    all_skus.append(msg["sku"])
         except Exception as e:
             st.error(f"❌ Error processing {uploaded_file.name}: {e}")
-            st.exception(e) # Show full traceback for debugging
 
     if all_messages:
-        st.markdown("---")
         st.markdown("## 📡 Submitting Combined Feed to Amazon...")
         try:
+            # Reassign message IDs to avoid duplication
             for idx, msg in enumerate(all_messages, start=1):
                 msg["messageId"] = idx
 
-            st.write("Getting Amazon Access Token...")
             token = get_amazon_access_token()
-            st.success("✅ Amazon Access Token obtained.")
-
             full_feed = {
                 "header": {
                     "sellerId": SELLER_ID,
@@ -418,11 +378,46 @@ if uploaded_files:
                 "messages": all_messages
             }
 
-            st.write("Submitting feed...")
             feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
-            st.success(f"✅ Combined Feed Submitted to Amazon — Feed ID: `{feed_id}`")
-            st.info("Feed processing may take several minutes. You can check the status in Seller Central using the Feed ID.")
+            st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
 
         except Exception as e:
-            st.error(f"❌ Error submitting combined feed to Amazon: {e}")
-            st.exception(e) # Show full traceback for debugging
+            st.error(f"❌ Error submitting feed to Amazon: {e}")
+
+if st.button("📤 Submit to Shopify + Amazon"):
+    st.info("🔹 Starting process...")
+    uploaded_file.seek(0)
+    image = Image.open(uploaded_file)
+    file_stem = os.path.splitext(uploaded_file.name)[0]
+    title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+    handle = file_stem.lower().replace(" ", "-").replace("_", "-") + "-baby-bodysuit"
+    st.image(image, caption=title_full, use_container_width=True)
+    st.info("🔹 Image loaded, beginning Shopify upload...")
+    try:
+        st.info("Uploading to ImgBB + Creating product on Shopify...")
+        uploaded_file.seek(0)
+        image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
+
+        st.success("✅ Shopify Product Created")
+
+        st.info("Generating Amazon Feed...")
+        token = get_amazon_access_token()
+        json_feed = generate_amazon_json_feed(file_stem, image_url)
+        # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
+
+        st.info("Submitting Feed to Amazon...")
+        feed_id = submit_amazon_json_feed(json_feed, token)
+        st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+
+        st.info("Checking Feed Status...")
+        status = check_amazon_feed_status(feed_id, token)
+        st.code(json.dumps(status, indent=2))
+
+        if status.get("processingStatus") == "DONE":
+            st.info("Downloading Processing Report...")
+            report = download_amazon_processing_report(status, token)
+            st.code(report)
+        else:
+            st.warning("⚠️ Feed not processed yet. Please check again later.")
+    except Exception as e:
+        st.error(f"❌ Error: {e}")
