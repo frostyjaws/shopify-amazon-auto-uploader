@@ -339,6 +339,48 @@ uploaded_files = st.file_uploader("Upload PNG Files (Hold Ctrl or Shift to selec
 if uploaded_files:
     all_messages = []
     all_skus = []
+    
+    # Generate a single parent SKU for all products
+    import random
+    parent_title = "Baby Bodysuit Collection"
+    parent_slug = ''.join([w[0] for w in parent_title.split() if w]).upper()[:3]
+    parent_sku = f"{parent_slug}-{random.randint(1000, 9999)}-PARENT"
+    
+    # Create a parent message first
+    parent_message = {
+        "messageId": 1,
+        "sku": parent_sku,
+        "operationType": "UPDATE",
+        "productType": "LEOTARD",
+        "requirements": "LISTING",
+        "attributes": {
+            "item_name": [{"value": "Baby Boy Girl Clothes Bodysuit Funny Cute (Parent)"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material": [{"value": "Cotton"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "parent"}],
+            "model_number": [{"value": "BabyBodysuit"}],
+            "model_name": [{"value": "Baby Bodysuit"}],
+            "import_designation": [{"value": "Imported"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
+        }
+    }
+    all_messages.append(parent_message)
+    
+    # Initialize message ID counter for child products
+    message_id_counter = 2
+    
     for uploaded_file in uploaded_files:
         st.markdown(f"---\n### 📦 Processing: `{uploaded_file.name}`")
         try:
@@ -351,13 +393,181 @@ if uploaded_files:
             uploaded_file.seek(0)
             image_url = upload_and_create_shopify_product(uploaded_file, handle, title_full)
             st.success("✅ Shopify Product Created")
-
+            
             st.info("Generating Amazon Feed...")
-            json_feed = json.loads(generate_amazon_json_feed(file_stem, image_url))
-            all_messages.extend(json_feed["messages"])
-            for msg in json_feed["messages"]:
+            
+            # Modified to generate only child variations that use the shared parent SKU
+            def generate_child_variations(title, image_url, parent_sku, start_message_id):
+                import json
+                
+                # Define helper functions
+                def format_slug(title):
+                    slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
+                    return f"{slug}-{random.randint(1000, 9999)}"
+                
+                def format_variation_sku(slug, variation):
+                    parts = variation.split()
+                    size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
+                                   .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
+                                   .replace("18M", "18M").replace("24M", "24M")
+                    color = parts[1][0].upper()
+                    sleeve = "SS" if "Short" in variation else "LS"
+                    return f"{slug}-{size}-{color}-{sleeve}"
+                
+                def extract_color_and_sleeve(variation):
+                    color_map = "White"
+                    sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
+                    for word in variation.split():
+                        if word.lower() in ["white", "pink", "blue", "natural"]:
+                            color_map = word.capitalize()
+                    return color_map, sleeve_type
+                
+                slug = format_slug(title)
+                
+                price_map = {
+                    "Newborn White Short Sleeve": 21.99,
+                    "Newborn White Long Sleeve": 22.99,
+                    "Newborn Natural Short Sleeve": 27.99,
+                    "0-3M White Short Sleeve": 21.99,
+                    "0-3M White Long Sleeve": 22.99,
+                    "0-3M Pink Short Sleeve": 27.99,
+                    "0-3M Blue Short Sleeve": 27.99,
+                    "3-6M White Short Sleeve": 21.99,
+                    "3-6M White Long Sleeve": 22.99,
+                    "3-6M Blue Short Sleeve": 27.99,
+                    "3-6M Pink Short Sleeve": 27.99,
+                    "6M Natural Short Sleeve": 27.99,
+                    "6-9M White Short Sleeve": 21.99,
+                    "6-9M White Long Sleeve": 22.99,
+                    "6-9M Pink Short Sleeve": 27.99,
+                    "6-9M Blue Short Sleeve": 27.99,
+                    "12M White Short Sleeve": 21.99,
+                    "12M White Long Sleeve": 22.99,
+                    "12M Natural Short Sleeve": 27.99,
+                    "12M Pink Short Sleeve": 27.99,
+                    "12M Blue Short Sleeve": 27.99,
+                    "18M White Short Sleeve": 21.99,
+                    "18M White Long Sleeve": 22.99,
+                    "18M Natural Short Sleeve": 27.99,
+                    "24M White Short Sleeve": 21.99,
+                    "24M White Long Sleeve": 22.99,
+                    "24M Natural Short Sleeve": 27.99
+                }
+                
+                child_messages = []
+                current_message_id = start_message_id
+                
+                # Get a subset of variations to avoid too many variations per design
+                selected_variations = [
+                    "Newborn White Short Sleeve",
+                    "0-3M White Short Sleeve",
+                    "6-9M White Short Sleeve",
+                    "12M White Short Sleeve"
+                ]
+                
+                for variation in selected_variations:
+                    sku = format_variation_sku(slug, variation)
+                    color_map, sleeve_type = extract_color_and_sleeve(variation)
+                    
+                    # Define alt images statically
+                    alt_images = [
+                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
+                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
+                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
+                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
+                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
+                    ]
+                    
+                    # Create other_product_images dictionary
+                    other_product_images = {}
+                    for i in range(min(5, len(alt_images))):
+                        other_product_images[f"other_product_image_locator_{i+1}"] = [{
+                            "media_location": alt_images[i],
+                            "marketplace_id": "ATVPDKIKX0DER"
+                        }]
+                    
+                    attributes = {
+                        "item_name": [{"value": f"{title} - {color_map} / {variation.split()[0]}"}],
+                        "brand": [{"value": "NOFO VIBES"}],
+                        "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+                        "product_description": [{"value": DESCRIPTION}],
+                        "bullet_point": [{"value": b} for b in BULLETS],
+                        "target_gender": [{"value": "female"}],
+                        "age_range_description": [{"value": "Infant"}],
+                        "material": [{"value": "Cotton"}],
+                        "department": [{"value": "Baby Girls"}],
+                        "variation_theme": [{"name": "SIZE/COLOR"}],
+                        "parentage_level": [{"value": "child"}],
+                        "child_parent_sku_relationship": [{
+                            "child_relationship_type": "variation",
+                            "parent_sku": parent_sku
+                        }],
+                        "size": [{"value": variation.split()[0]}],
+                        "style": [{"value": sleeve_type}],
+                        "model_number": [{"value": "CrewNeckBodysuit"}],
+                        "model_name": [{"value": "Crew Neck Bodysuit"}],
+                        "import_designation": [{"value": "Made in USA"}],
+                        "country_of_origin": [{"value": "US"}],
+                        "condition_type": [{"value": "new_new"}],
+                        "batteries_required": [{"value": False}],
+                        "fabric_type": [{"value": "100% cotton"}],
+                        "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+                        "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+                        "care_instructions": [{"value": "Machine Wash"}],
+                        "sleeve": [{"value": sleeve_type}],
+                        "color": [{"value": "multi"}],
+                        "list_price": [{"currency": "USD", "value": price_map[variation]}],
+                        "item_package_dimensions": [{
+                            "length": {"value": 3, "unit": "inches"},
+                            "width": {"value": 3, "unit": "inches"},
+                            "height": {"value": 1, "unit": "inches"}
+                        }],
+                        "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
+                        "main_product_image_locator": [{
+                            "media_location": image_url,
+                            "marketplace_id": "ATVPDKIKX0DER"
+                        }],
+                        **other_product_images,
+                        "purchasable_offer": [{
+                            "currency": "USD",
+                            "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
+                            "marketplace_id": "ATVPDKIKX0DER"
+                        }],
+                        "fulfillment_availability": [{
+                            "quantity": 999,
+                            "fulfillment_channel_code": "DEFAULT",
+                            "marketplace_id": "ATVPDKIKX0DER"
+                        }]
+                    }
+                    
+                    child_messages.append({
+                        "messageId": current_message_id,
+                        "sku": sku,
+                        "operationType": "UPDATE",
+                        "productType": "LEOTARD",
+                        "requirements": "LISTING",
+                        "attributes": attributes
+                    })
+                    
+                    current_message_id += 1
+                
+                return child_messages, current_message_id
+            
+            # Generate child variations for this product
+            child_messages, message_id_counter = generate_child_variations(
+                file_stem, image_url, parent_sku, message_id_counter
+            )
+            
+            # Add child messages to all_messages
+            all_messages.extend(child_messages)
+            
+            # Add SKUs to all_skus
+            for msg in child_messages:
                 if msg.get("sku"):
                     all_skus.append(msg["sku"])
+                    
+            st.success(f"✅ Amazon Feed data generated for {uploaded_file.name}")
+            
         except Exception as e:
             st.error(f"❌ Error processing {uploaded_file.name}: {e}")
 
@@ -367,7 +577,7 @@ if uploaded_files:
             # Reassign message IDs to avoid duplication
             for idx, msg in enumerate(all_messages, start=1):
                 msg["messageId"] = idx
-
+            
             token = get_amazon_access_token()
             full_feed = {
                 "header": {
@@ -377,10 +587,10 @@ if uploaded_files:
                 },
                 "messages": all_messages
             }
-
+            
             feed_id = submit_amazon_json_feed(json.dumps(full_feed), token)
             st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
-
+            
         except Exception as e:
             st.error(f"❌ Error submitting feed to Amazon: {e}")
 
