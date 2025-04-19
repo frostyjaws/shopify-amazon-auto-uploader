@@ -219,13 +219,23 @@ def generate_amazon_json_feed(title, image_url):
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            "size": [{"value": variation}],
+            "size_name": [
+                {
+                    "value": variation,
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
             "import_designation": [{"value": "Made in USA"}],
             "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}],
+            "condition_type": [
+                {
+                    "value": "new_new",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
