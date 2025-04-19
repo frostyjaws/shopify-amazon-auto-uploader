@@ -98,7 +98,8 @@ def generate_amazon_json_feed(title, image_url):
     ]
     
     def format_slug(title):
-        return title.replace(" ", "-").replace("_", "-").lower()
+        slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
+        return f"{slug}-{random.randint(1000, 9999)}"
 
     def format_variation_sku(slug, variation):
         parts = variation.split()
@@ -149,7 +150,7 @@ def generate_amazon_json_feed(title, image_url):
         "24M Natural Short Sleeve": 27.99
     }
 
-    parent_sku = f"{slug}-parent"
+    parent_sku = f"{slug}-PARENT"
     
     messages = [{
         "messageId": 1,
@@ -157,15 +158,6 @@ def generate_amazon_json_feed(title, image_url):
         "operationType": "UPDATE",
         "productType": "LEOTARD",
         "requirements": "LISTING",
-        "main_product_image_locator": [{
-            "media_location": image_url,
-            "marketplace_id": "ATVPDKIKX0DER"
-        }],
-        "fulfillment_availability": [{
-            "quantity": 0,
-            "fulfillment_channel_code": "DEFAULT",
-            "marketplace_id": "ATVPDKIKX0DER"
-        }],
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
@@ -227,23 +219,13 @@ def generate_amazon_json_feed(title, image_url):
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            "size_name": [
-                {
-                    "value": variation,
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
+            "size": [{"value": variation}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
             "import_designation": [{"value": "Made in USA"}],
             "country_of_origin": [{"value": "US"}],
-            "condition_type": [
-                {
-                    "value": "new_new",
-                    "marketplace_id": "ATVPDKIKX0DER"
-                }
-            ],
+            "condition_type": [{"value": "new_new"}],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
