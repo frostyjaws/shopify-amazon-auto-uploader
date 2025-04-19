@@ -134,128 +134,128 @@ def generate_amazon_json_feed(title, image_url):
     }
 
     parent_sku = f"{slug}-PARENT"
+    messages = []
     
-    # Create an array of child SKUs for the parent's variations
-    child_skus = [format_variation_sku(slug, variation) for variation in VARIATIONS]
-
-    # Parent product message
+    # Create parent message with exact format from Amazon example
     parent_message = {
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "LEOTARD",
+        "productType": "CLOTHING",
+        "requirements": "LISTING",
         "attributes": {
-            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-            "brand_name": [{"value": "NOFO VIBES"}],
-            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
-            "product_description": [{"value": DESCRIPTION}],
-            "bullet_point": [{"value": b} for b in BULLETS],
-            "target_gender": [{"value": "female"}],
-            "age_range_description": [{"value": "Infant"}],
-            "material": [{"value": "Cotton"}],
-            "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"value": "SizeColor"}],
-            "model_number": [{"value": "NBV"}],
-            "model_name": [{"value": title}],
-            "import_designation": [{"value": "Imported"}],
-            "country_of_origin": [{"value": "US"}],
-            "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
-            "color": [{"value": "multi"}],
-            "size": [{"value": "Newborn"}],
-            "style": [{"value": "Short Sleeve"}],
-            "main_product_image_locator": [{
-                "media_location": image_url,
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            "condition_type": [{"value": "new_new"}]
+            "item_name": [
+                {
+                    "value": f"{title} - Baby Bodysuit (Parent)",
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
+            "brand_name": [
+                {
+                    "value": "NOFO VIBES",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
+            "condition_type": [
+                {
+                    "value": "new_new",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
+            "variation_theme": [
+                {
+                    "value": "SizeColor",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ]
         }
     }
+    messages.append(parent_message)
 
-    # Add variations relationship to parent
-    parent_message["relationships"] = {
-        "variations": [{"sku": child_sku, "type": "CHILD"} for child_sku in child_skus]
-    }
-
-    messages = [parent_message]
-
-    # Create child product messages
+    # Create child messages with exact format from Amazon example
     for idx, variation in enumerate(VARIATIONS, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
-
-        other_product_images = {
-            f"other_product_image_locator_{i+1}": [{
-                "media_location": [
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
-                ][i],
-                "marketplace_id": "ATVPDKIKX0DER"
-            }] for i in range(5)
-        }
-
-        attributes = {
-            "item_name": [{"value": f"{title} - {color_map} / {variation.split()[0]}"}],
-            "brand_name": [{"value": "NOFO VIBES"}],
-            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
-            "product_description": [{"value": DESCRIPTION}],
-            "bullet_point": [{"value": b} for b in BULLETS],
-            "target_gender": [{"value": "female"}],
-            "age_range_description": [{"value": "Infant"}],
-            "material": [{"value": "Cotton"}],
-            "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"value": "SizeColor"}],
-            "color": [{"value": color_map}],
-            "size_name": [{"value": variation.split()[0]}],
-            "model_number": [{"value": "NBV"}],
-            "model_name": [{"value": "Crew Neck Bodysuit"}],
-            "import_designation": [{"value": "Made in USA"}],
-            "country_of_origin": [{"value": "US"}],
-            "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
-            "care_instructions": [{"value": "Machine Wash"}],
-            "sleeve": [{"value": sleeve_type}],
-            "list_price": [{"currency": "USD", "value": price_map[variation]}],
-            "item_package_dimensions": [{
-                "length": {"value": 3, "unit": "inches"},
-                "width": {"value": 3, "unit": "inches"},
-                "height": {"value": 1, "unit": "inches"}
-            }],
-            "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
-            "main_product_image_locator": [{
-                "media_location": image_url,
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            **other_product_images,
-            "purchasable_offer": [{
-                "currency": "USD",
-                "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            "fulfillment_availability": [{
-                "quantity": 999,
-                "fulfillment_channel_code": "DEFAULT",
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            "condition_type": [{"value": "new_new"}]
-        }
-
+        
         child_message = {
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "LEOTARD",
-            "attributes": attributes,
-            "relationships": {
-                "parent": {
-                    "sku": parent_sku,
-                    "type": "PARENT"
-                }
+            "requirements": "LISTING",
+            "attributes": {
+                "item_name": [
+                    {
+                        "value": f"{title} - {color_map} / {variation.split()[0]}",
+                        "language_tag": "en_US",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "brand_name": [
+                    {
+                        "value": "NOFO VIBES",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "color": [
+                    {
+                        "value": color_map,
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "size_name": [
+                    {
+                        "value": variation.split()[0],
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "condition_type": [
+                    {
+                        "value": "new_new",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "variation_theme": [
+                    {
+                        "value": "SizeColor",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "parent_sku": [
+                    {
+                        "value": parent_sku,
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "main_product_image_locator": [
+                    {
+                        "media_location": image_url,
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "fulfillment_availability": [
+                    {
+                        "quantity": 999,
+                        "fulfillment_channel_code": "DEFAULT",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "purchasable_offer": [
+                    {
+                        "currency": "USD",
+                        "our_price": [
+                            {
+                                "schedule": [
+                                    {
+                                        "value_with_tax": price_map[variation]
+                                    }
+                                ]
+                            }
+                        ],
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ]
             }
         }
         messages.append(child_message)
