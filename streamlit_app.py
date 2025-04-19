@@ -136,12 +136,12 @@ def generate_amazon_json_feed(title, image_url):
     parent_sku = f"{slug}-PARENT"
     messages = []
     
-    # Create parent message with exact format from Amazon example
+    # Create parent message
     parent_message = {
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "CLOTHING",
+        "productType": "LEOTARD",
         "requirements": "LISTING",
         "attributes": {
             "item_name": [
@@ -168,12 +168,46 @@ def generate_amazon_json_feed(title, image_url):
                     "value": "SizeColor",
                     "marketplace_id": "ATVPDKIKX0DER"
                 }
+            ],
+            "bullet_point": [
+                {
+                    "value": BULLETS[0],
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                },
+                {
+                    "value": BULLETS[1],
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                },
+                {
+                    "value": BULLETS[2],
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                },
+                {
+                    "value": BULLETS[3],
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                },
+                {
+                    "value": BULLETS[4],
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
+            ],
+            "product_description": [
+                {
+                    "value": DESCRIPTION,
+                    "language_tag": "en_US",
+                    "marketplace_id": "ATVPDKIKX0DER"
+                }
             ]
         }
     }
     messages.append(parent_message)
 
-    # Create child messages with exact format from Amazon example
+    # Create child messages
     for idx, variation in enumerate(VARIATIONS, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
@@ -253,6 +287,33 @@ def generate_amazon_json_feed(title, image_url):
                                 ]
                             }
                         ],
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    }
+                ],
+                "bullet_point": [
+                    {
+                        "value": BULLETS[0],
+                        "language_tag": "en_US",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    },
+                    {
+                        "value": BULLETS[1],
+                        "language_tag": "en_US",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    },
+                    {
+                        "value": BULLETS[2],
+                        "language_tag": "en_US",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    },
+                    {
+                        "value": BULLETS[3],
+                        "language_tag": "en_US",
+                        "marketplace_id": "ATVPDKIKX0DER"
+                    },
+                    {
+                        "value": BULLETS[4],
+                        "language_tag": "en_US",
                         "marketplace_id": "ATVPDKIKX0DER"
                     }
                 ]
