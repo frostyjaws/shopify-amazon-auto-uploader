@@ -394,14 +394,13 @@ if uploaded_files:
                     slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
                     return f"{slug}-{random.randint(1000, 9999)}"
                 
-                def format_variation_sku(slug, variation):
-                    parts = variation.split()
-                    size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
-                                   .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
-                                   .replace("18M", "18M").replace("24M", "24M")
-                    color = parts[1][0].upper()
-                    sleeve = "SS" if "Short" in variation else "LS"
-                    return f"{slug}-{size}-{color}-{sleeve}"
+                def format_variation_sku(slug, size, sleeve_type, color):
+                    size_code = size.replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
+                               .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
+                               .replace("18M", "18M").replace("24M", "24M")
+                    sleeve = "SS" if "Short" in sleeve_type else "LS"
+                    color_code = color[0].upper()
+                    return f"{slug}-{size_code}-{color_code}-{sleeve}"
                 
                 def extract_color_and_sleeve(variation):
                     color_map = "White"
@@ -445,104 +444,98 @@ if uploaded_files:
                 
                 child_messages = []
                 current_message_id = start_message_id
-                
-                # Use all variations instead of a limited subset
+
+                # Use only the core variations instead of all combinations
                 variations = [
-                    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-                    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-                    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-                    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-                    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-                    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-                    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+                    # Sizes
+                    "Newborn",
+                    "0-3M",
+                    "3-6M",
+                    "6-9M",
+                    "12M",
+                    "18M",
+                    "24M"
                 ]
                 
-                # Remove the limited selected_variations and use all variations
-                for variation in variations:
-                    sku = format_variation_sku(slug, variation)
-                    color_map, sleeve_type = extract_color_and_sleeve(variation)
-                    
-                    # Define alt images statically
-                    alt_images = [
-                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
-                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
-                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115",
-                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/7159a2aa-6595-4f28-8c53-9fe803487504-copy_3fa35972-432c-4a62-b23e-1ecd5279f43d.jpg?v=1744674846",
-                        "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/700cea5a-034d-4520-99ee-218911d7e905-copy.jpg?v=1744051115"
-                    ]
-                    
-                    # Create other_product_images dictionary
-                    other_product_images = {}
-                    for i in range(min(5, len(alt_images))):
-                        other_product_images[f"other_product_image_locator_{i+1}"] = [{
-                            "media_location": alt_images[i],
-                            "marketplace_id": "ATVPDKIKX0DER"
-                        }]
-                    
-                    attributes = {
-                        "item_name": [{"value": f"{title} - {color_map} / {variation.split()[0]}"}],
-                        "brand": [{"value": "NOFO VIBES"}],
-                        "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
-                        "product_description": [{"value": DESCRIPTION}],
-                        "bullet_point": [{"value": b} for b in BULLETS],
-                        "target_gender": [{"value": "female"}],
-                        "age_range_description": [{"value": "Infant"}],
-                        "material": [{"value": "Cotton"}],
-                        "department": [{"value": "Baby Girls"}],
-                        "variation_theme": [{"name": "SIZE/COLOR"}],
-                        "parentage_level": [{"value": "child"}],
-                        "child_parent_sku_relationship": [{
-                            "child_relationship_type": "variation",
-                            "parent_sku": parent_sku
-                        }],
-                        "size": [{"value": variation.split()[0]}],
-                        "style": [{"value": sleeve_type}],
-                        "model_number": [{"value": "CrewNeckBodysuit"}],
-                        "model_name": [{"value": "Crew Neck Bodysuit"}],
-                        "import_designation": [{"value": "Made in USA"}],
-                        "country_of_origin": [{"value": "US"}],
-                        "condition_type": [{"value": "new_new"}],
-                        "batteries_required": [{"value": False}],
-                        "fabric_type": [{"value": "100% cotton"}],
-                        "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-                        "supplier_declared_has_product_identifier_exemption": [{"value": True}],
-                        "care_instructions": [{"value": "Machine Wash"}],
-                        "sleeve": [{"value": sleeve_type}],
-                        "color": [{"value": "multi"}],
-                        "list_price": [{"currency": "USD", "value": price_map[variation]}],
-                        "item_package_dimensions": [{
-                            "length": {"value": 3, "unit": "inches"},
-                            "width": {"value": 3, "unit": "inches"},
-                            "height": {"value": 1, "unit": "inches"}
-                        }],
-                        "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
-                        "main_product_image_locator": [{
-                            "media_location": image_url,
-                            "marketplace_id": "ATVPDKIKX0DER"
-                        }],
-                        **other_product_images,
-                        "purchasable_offer": [{
-                            "currency": "USD",
-                            "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
-                            "marketplace_id": "ATVPDKIKX0DER"
-                        }],
-                        "fulfillment_availability": [{
-                            "quantity": 999,
-                            "fulfillment_channel_code": "DEFAULT",
-                            "marketplace_id": "ATVPDKIKX0DER"
-                        }]
-                    }
-                    
-                    child_messages.append({
-                        "messageId": current_message_id,
-                        "sku": sku,
-                        "operationType": "UPDATE",
-                        "productType": "LEOTARD",
-                        "requirements": "LISTING",
-                        "attributes": attributes
-                    })
-                    
-                    current_message_id += 1
+                sleeve_types = ["Short Sleeve", "Long Sleeve"]
+                colors = ["White", "Pink", "Blue", "Natural"]
+                
+                def format_variation_sku(slug, size, sleeve_type, color):
+                    size_code = size.replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
+                               .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
+                               .replace("18M", "18M").replace("24M", "24M")
+                    sleeve = "SS" if "Short" in sleeve_type else "LS"
+                    color_code = color[0].upper()
+                    return f"{slug}-{size_code}-{color_code}-{sleeve}"
+
+                # Create one variation for each size
+                for size in variations:
+                    for sleeve_type in sleeve_types:
+                        for color in colors:
+                            sku = format_variation_sku(slug, size, sleeve_type, color)
+                            
+                            attributes = {
+                                "item_name": [{"value": f"{title} - {color} / {size} / {sleeve_type}"}],
+                                "brand": [{"value": "NOFO VIBES"}],
+                                "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+                                "product_description": [{"value": DESCRIPTION}],
+                                "bullet_point": [{"value": b} for b in BULLETS],
+                                "target_gender": [{"value": "female"}],
+                                "age_range_description": [{"value": "Infant"}],
+                                "material": [{"value": "Cotton"}],
+                                "department": [{"value": "Baby Girls"}],
+                                "variation_theme": [{"name": "SIZE-COLOR-SLEEVE"}],
+                                "parentage_level": [{"value": "child"}],
+                                "child_parent_sku_relationship": [{
+                                    "child_relationship_type": "variation",
+                                    "parent_sku": parent_sku
+                                }],
+                                "size": [{"value": size}],
+                                "style": [{"value": sleeve_type}],
+                                "model_number": [{"value": "CrewNeckBodysuit"}],
+                                "model_name": [{"value": "Crew Neck Bodysuit"}],
+                                "import_designation": [{"value": "Made in USA"}],
+                                "country_of_origin": [{"value": "US"}],
+                                "condition_type": [{"value": "new_new"}],
+                                "batteries_required": [{"value": False}],
+                                "fabric_type": [{"value": "100% cotton"}],
+                                "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+                                "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+                                "care_instructions": [{"value": "Machine Wash"}],
+                                "sleeve": [{"value": sleeve_type}],
+                                "color": [{"value": color}],
+                                "list_price": [{"currency": "USD", "value": 21.99}],  # Using a standard price
+                                "item_package_dimensions": [{
+                                    "length": {"value": 3, "unit": "inches"},
+                                    "width": {"value": 3, "unit": "inches"},
+                                    "height": {"value": 1, "unit": "inches"}
+                                }],
+                                "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
+                                "main_product_image_locator": [{
+                                    "media_location": image_url,
+                                    "marketplace_id": "ATVPDKIKX0DER"
+                                }],
+                                "purchasable_offer": [{
+                                    "currency": "USD",
+                                    "our_price": [{"schedule": [{"value_with_tax": 21.99}]}],
+                                    "marketplace_id": "ATVPDKIKX0DER"
+                                }],
+                                "fulfillment_availability": [{
+                                    "quantity": 999,
+                                    "fulfillment_channel_code": "DEFAULT",
+                                    "marketplace_id": "ATVPDKIKX0DER"
+                                }]
+                            }
+                            
+                            child_messages.append({
+                                "messageId": current_message_id,
+                                "sku": sku,
+                                "operationType": "UPDATE",
+                                "productType": "LEOTARD",
+                                "requirements": "LISTING",
+                                "attributes": attributes
+                            })
+                            current_message_id += 1
                 
                 return child_messages, current_message_id
             
