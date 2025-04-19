@@ -98,8 +98,7 @@ def generate_amazon_json_feed(title, image_url):
     ]
     
     def format_slug(title):
-        slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
-        return f"{slug}-{random.randint(1000, 9999)}"
+        return title.replace(" ", "-").replace("_", "-").lower()
 
     def format_variation_sku(slug, variation):
         parts = variation.split()
@@ -150,7 +149,7 @@ def generate_amazon_json_feed(title, image_url):
         "24M Natural Short Sleeve": 27.99
     }
 
-    parent_sku = f"{slug}-PARENT"
+    parent_sku = f"{slug}-parent"
     
     messages = [{
         "messageId": 1,
@@ -158,6 +157,15 @@ def generate_amazon_json_feed(title, image_url):
         "operationType": "UPDATE",
         "productType": "LEOTARD",
         "requirements": "LISTING",
+        "main_product_image_locator": [{
+            "media_location": image_url,
+            "marketplace_id": "ATVPDKIKX0DER"
+        }],
+        "fulfillment_availability": [{
+            "quantity": 0,
+            "fulfillment_channel_code": "DEFAULT",
+            "marketplace_id": "ATVPDKIKX0DER"
+        }],
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
