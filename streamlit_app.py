@@ -101,12 +101,14 @@ def generate_amazon_json_feed(title, image_url):
         return f"{slug}-{size}-{color}-{sleeve}"
 
     def extract_color_and_sleeve(variation):
-        color_map = "White"
-        sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
-        for word in variation.split():
-            if word.lower() in ["white", "pink", "blue", "natural"]:
-                color_map = word.capitalize()
-        return color_map, sleeve_type
+        parts = variation.split()
+        color = parts[1]
+        sleeve_type = " ".join(parts[2:])
+        # Validate color against Amazon's allowed values
+        valid_colors = ["White", "Pink", "Blue", "Natural"]
+        if color not in valid_colors:
+            raise ValueError(f"Invalid color '{color}' in variation: {variation}")
+        return color, sleeve_type, parts[0]  # Return size as third element
 
     slug = format_slug(title)
 
@@ -174,7 +176,7 @@ def generate_amazon_json_feed(title, image_url):
     
     for idx, variation in enumerate(VARIATIONS, start=2):
         sku = format_variation_sku(slug, variation)
-        color_map, sleeve_type = extract_color_and_sleeve(variation)
+        color_map, sleeve_type, size = extract_color_and_sleeve(variation)
         
         # Define alt images statically to avoid issues with dynamic content
         alt_images = [
@@ -209,7 +211,7 @@ def generate_amazon_json_feed(title, image_url):
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            "size": [{"value": variation}],
+            "size": [{"value": size}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "CrewNeckBodysuit"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
@@ -222,7 +224,7 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": "multi"}],
+            "color": [{"value": color_map}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
                 "length": {"value": 3, "unit": "inches"},
@@ -394,21 +396,24 @@ if uploaded_files:
                     slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
                     return f"{slug}-{random.randint(1000, 9999)}"
                 
-                def format_variation_sku(slug, size, sleeve_type, color):
-                    size_code = size.replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
-                               .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
-                               .replace("18M", "18M").replace("24M", "24M")
-                    sleeve = "SS" if "Short" in sleeve_type else "LS"
-                    color_code = color[0].upper()
-                    return f"{slug}-{size_code}-{color_code}-{sleeve}"
+                def format_variation_sku(slug, variation):
+                    parts = variation.split()
+                    size = parts[0].replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
+                                   .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
+                                   .replace("18M", "18M").replace("24M", "24M")
+                    color = parts[1][0].upper()
+                    sleeve = "SS" if "Short" in variation else "LS"
+                    return f"{slug}-{size}-{color}-{sleeve}"
                 
                 def extract_color_and_sleeve(variation):
-                    color_map = "White"
-                    sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
-                    for word in variation.split():
-                        if word.lower() in ["white", "pink", "blue", "natural"]:
-                            color_map = word.capitalize()
-                    return color_map, sleeve_type
+                    parts = variation.split()
+                    color = parts[1]
+                    sleeve_type = " ".join(parts[2:])
+                    # Validate color against Amazon's allowed values
+                    valid_colors = ["White", "Pink", "Blue", "Natural"]
+                    if color not in valid_colors:
+                        raise ValueError(f"Invalid color '{color}' in variation: {variation}")
+                    return color, sleeve_type, parts[0]  # Return size as third element
                 
                 slug = format_slug(title)
                 
@@ -460,14 +465,6 @@ if uploaded_files:
                 sleeve_types = ["Short Sleeve", "Long Sleeve"]
                 colors = ["White", "Pink", "Blue", "Natural"]
                 
-                def format_variation_sku(slug, size, sleeve_type, color):
-                    size_code = size.replace("Newborn", "NB").replace("0-3M", "03M").replace("3-6M", "36M") \
-                               .replace("6-9M", "69M").replace("6M", "06M").replace("12M", "12M") \
-                               .replace("18M", "18M").replace("24M", "24M")
-                    sleeve = "SS" if "Short" in sleeve_type else "LS"
-                    color_code = color[0].upper()
-                    return f"{slug}-{size_code}-{color_code}-{sleeve}"
-
                 # Create one variation for each size
                 for size in variations:
                     for sleeve_type in sleeve_types:
