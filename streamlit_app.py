@@ -146,7 +146,7 @@ def generate_amazon_json_feed(title, image_url):
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "LEOTARD",
+        "productType": "BABY_BODYSUIT",
         "requirements": "LISTING",
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
@@ -158,7 +158,7 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"name": "SizeColor"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": title}],
             "model_name": [{"value": title}],
@@ -203,7 +203,7 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"name": "SizeColor"}],
             "parentage_level": [{"value": "child"}],
             "child_parent_sku_relationship": [{
                 "child_relationship_type": "variation",
@@ -251,7 +251,7 @@ def generate_amazon_json_feed(title, image_url):
             "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
-            "productType": "LEOTARD",
+            "productType": "BABY_BODYSUIT",
             "requirements": "LISTING",
             "attributes": attributes
         })
@@ -341,7 +341,7 @@ if uploaded_files:
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "LEOTARD",
+        "productType": "BABY_BODYSUIT",
         "requirements": "LISTING",
         "attributes": {
             "item_name": [{"value": "Baby Boy Girl Clothes Bodysuit Funny Cute (Parent)"}],
@@ -353,7 +353,7 @@ if uploaded_files:
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "variation_theme": [{"name": "SizeColor"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "BabyBodysuit"}],
             "model_name": [{"value": "Baby Bodysuit"}],
@@ -484,7 +484,7 @@ if uploaded_files:
                                 "age_range_description": [{"value": "Infant"}],
                                 "material": [{"value": "Cotton"}],
                                 "department": [{"value": "Baby Girls"}],
-                                "variation_theme": [{"name": "SIZE-COLOR-SLEEVE"}],
+                                "variation_theme": [{"name": "SizeColor"}],
                                 "parentage_level": [{"value": "child"}],
                                 "child_parent_sku_relationship": [{
                                     "child_relationship_type": "variation",
@@ -531,7 +531,7 @@ if uploaded_files:
                                 "messageId": current_message_id,
                                 "sku": sku,
                                 "operationType": "UPDATE",
-                                "productType": "LEOTARD",
+                                "productType": "BABY_BODYSUIT",
                                 "requirements": "LISTING",
                                 "attributes": attributes
                             })
