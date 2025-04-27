@@ -77,7 +77,7 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
             "images": [{"src": image_url}]
         }
     }
-    r = requests.post(shopify_url, json=payload, headers=headers)
+    r = requests.post(shopify_url, json=payload, headers=headers, verify=False)
     r.raise_for_status()
     shopify_product = r.json()
     shopify_image_url = shopify_product["product"]["images"][0]["src"]
