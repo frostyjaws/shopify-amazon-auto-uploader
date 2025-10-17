@@ -1,7 +1,4 @@
 
-**Download:** [streamlit_app_updated.py](sandbox:/mnt/data/streamlit_app_updated.py)
-
-If you’d rather paste it manually, the full code is also below:
 
 ```python
 import streamlit as st
