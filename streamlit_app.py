@@ -138,14 +138,55 @@ def get_amazon_access_token():
     return r.json()["access_token"]
 
 def submit_amazon_json_feed(json_feed, token):
-    doc = requests.post("https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+    # 1) Create feed document
+    create_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
         headers={"x-amz-access-token": token, "Content-Type": "application/json"},
-        json={"contentType": "application/json"}).json()
-    requests.put(doc["url"], data=json_feed.encode("utf-8"), headers={"Content-Type": "application/json"})
-    res = requests.post("https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+        json={"contentType": "application/json"}
+    )
+    try:
+        create_res.raise_for_status()
+    except Exception:
+        # Show Amazon error response in the app for quick debugging
+        try:
+            st.error(f"Create document failed: {create_res.status_code} {create_res.text}")
+        except Exception:
+            pass
+        raise
+
+    doc = create_res.json()
+
+    # 2) Resolve upload URL (SP-API can return "url" or "uploadDestinationUrl")
+    upload_url = doc.get("url") or doc.get("uploadDestinationUrl")
+    if not upload_url:
+        st.error(f"Amazon returned no upload URL. Full response: {doc}")
+        raise RuntimeError("No upload URL from Amazon.")
+
+    # 3) Upload JSON to the presigned S3 URL
+    up = requests.put(upload_url, data=json_feed.encode("utf-8"), headers={"Content-Type": "application/json"})
+    try:
+        up.raise_for_status()
+    except Exception:
+        st.error(f"Upload failed: {up.status_code} {up.text}")
+        raise
+
+    # 4) Submit feed
+    feed_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
         headers={"x-amz-access-token": token, "Content-Type": "application/json"},
-        json={"feedType": "JSON_LISTINGS_FEED", "marketplaceIds": [MARKETPLACE_ID], "inputFeedDocumentId": doc["feedDocumentId"]})
-    return res.json()["feedId"]
+        json={
+            "feedType": "JSON_LISTINGS_FEED",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "inputFeedDocumentId": doc["feedDocumentId"]
+        }
+    )
+    try:
+        feed_res.raise_for_status()
+    except Exception:
+        st.error(f"Submit feed failed: {feed_res.status_code} {feed_res.text}")
+        raise
+
+    return feed_res.json().get("feedId")
 
 uploaded_files = st.file_uploader("Upload PNG Files", type="png", accept_multiple_files=True)
 if uploaded_files:
@@ -157,4 +198,3 @@ if uploaded_files:
         feed = generate_amazon_json_feed(name, url)
         feed_id = submit_amazon_json_feed(feed, token)
         st.success(f"✅ Submitted to Amazon — Feed ID: {feed_id}")
-
