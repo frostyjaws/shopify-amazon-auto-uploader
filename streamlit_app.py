@@ -308,8 +308,8 @@ def submit_amazon_json_feed(json_feed, access_token):
         headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
         json={"contentType": "application/json"}
     )
-    if create_res.status_code != 200:
-        raise RuntimeError(f"Create document failed {create_res.status_code}: {create_res.text}")
+    if create_res.status_code not in (200, 201):
+    raise RuntimeError(f"Create document failed {create_res.status_code}: {create_res.text}")
 
     doc = create_res.json()
     upload_url = doc.get("url") or doc.get("uploadDestinationUrl")
