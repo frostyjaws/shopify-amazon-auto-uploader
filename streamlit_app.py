@@ -1,3 +1,10 @@
+Done. Here’s your **entire updated script** with only the changes you requested (swatches, color mapping, “Size – Sleeve,” and your master variations + prices).
+
+**Download:** [streamlit_app_updated.py](sandbox:/mnt/data/streamlit_app_updated.py)
+
+If you’d rather paste it manually, the full code is also below:
+
+```python
 import streamlit as st
 import requests
 import os
@@ -39,14 +46,41 @@ BULLETS =  [
     "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
+# Keep a top-level VARIATIONS for clarity (not required by the app flow)
 VARIATIONS = [
-    "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-    "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-    "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-    "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-    "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-    "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-    "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    # Short Sleeve — White ($29.99)
+    "Newborn White Short Sleeve",
+    "0-3M White Short Sleeve",
+    "3-6M White Short Sleeve",
+    "6-9M White Short Sleeve",
+    "12M White Short Sleeve",
+    "18M White Short Sleeve",
+    "24M White Short Sleeve",
+
+    # Short Sleeve — Natural ($33.99)
+    "0-3M Natural Short Sleeve",
+    "3-6M Natural Short Sleeve",
+    "6-9M Natural Short Sleeve",
+    "12M Natural Short Sleeve",
+
+    # Short Sleeve — Pink ($33.99)
+    "0-3M Pink Short Sleeve",
+    "3-6M Pink Short Sleeve",
+    "6-9M Pink Short Sleeve",
+
+    # Short Sleeve — Blue ($33.99)
+    "0-3M Blue Short Sleeve",
+    "3-6M Blue Short Sleeve",
+    "6-9M Blue Short Sleeve",
+
+    # Long Sleeve — White ($30.99)
+    "Newborn White Long Sleeve",
+    "0-3M White Long Sleeve",
+    "3-6M White Long Sleeve",
+    "6-9M White Long Sleeve",
+    "12M White Long Sleeve",
+    "18M White Long Sleeve",
+    "24M White Long Sleeve",
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
@@ -87,14 +121,41 @@ def generate_amazon_json_feed(title, image_url):
     import random
     import json
 
-    variations = [
-        "Newborn White Short Sleeve", "Newborn White Long Sleeve", "Newborn Natural Short Sleeve",
-        "0-3M White Short Sleeve", "0-3M White Long Sleeve", "0-3M Pink Short Sleeve", "0-3M Blue Short Sleeve",
-        "3-6M White Short Sleeve", "3-6M White Long Sleeve", "3-6M Blue Short Sleeve", "3-6M Pink Short Sleeve",
-        "6M Natural Short Sleeve", "6-9M White Short Sleeve", "6-9M White Long Sleeve", "6-9M Pink Short Sleeve",
-        "6-9M Blue Short Sleeve", "12M White Short Sleeve", "12M White Long Sleeve", "12M Natural Short Sleeve",
-        "12M Pink Short Sleeve", "12M Blue Short Sleeve", "18M White Short Sleeve", "18M White Long Sleeve",
-        "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
+    # Master variations for this feed
+    VARIATIONS = [
+        # Short Sleeve — White ($29.99)
+        "Newborn White Short Sleeve",
+        "0-3M White Short Sleeve",
+        "3-6M White Short Sleeve",
+        "6-9M White Short Sleeve",
+        "12M White Short Sleeve",
+        "18M White Short Sleeve",
+        "24M White Short Sleeve",
+
+        # Short Sleeve — Natural ($33.99)
+        "0-3M Natural Short Sleeve",
+        "3-6M Natural Short Sleeve",
+        "6-9M Natural Short Sleeve",
+        "12M Natural Short Sleeve",
+
+        # Short Sleeve — Pink ($33.99)
+        "0-3M Pink Short Sleeve",
+        "3-6M Pink Short Sleeve",
+        "6-9M Pink Short Sleeve",
+
+        # Short Sleeve — Blue ($33.99)
+        "0-3M Blue Short Sleeve",
+        "3-6M Blue Short Sleeve",
+        "6-9M Blue Short Sleeve",
+
+        # Long Sleeve — White ($30.99)
+        "Newborn White Long Sleeve",
+        "0-3M White Long Sleeve",
+        "3-6M White Long Sleeve",
+        "6-9M White Long Sleeve",
+        "12M White Long Sleeve",
+        "18M White Long Sleeve",
+        "24M White Long Sleeve",
     ]
 
     def format_slug(title):
@@ -118,36 +179,57 @@ def generate_amazon_json_feed(title, image_url):
                 color_map = word.capitalize()
         return color_map, sleeve_type
 
+    # NEW: Size+Sleeve + Amazon-friendly color names
+    def extract_color_sleeve_size(variation: str):
+        parts = variation.split()
+        size_token = next(p for p in parts if p == "Newborn" or "M" in p)
+        sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
+        size_with_sleeve = f"{size_token} - {sleeve_type}"
+        color_token = next(p for p in parts if p.lower() in ["white", "pink", "blue", "natural"])
+        color_value = {
+            "white": "White",
+            "natural": "Beige",
+            "pink": "Light Pink",
+            "blue": "Light Blue",
+        }[color_token.lower()]
+        return color_value, sleeve_type, size_with_sleeve
+
     slug = format_slug(title)
 
     price_map = {
-        "Newborn White Short Sleeve": 21.99,
-        "Newborn White Long Sleeve": 22.99,
-        "Newborn Natural Short Sleeve": 27.99,
-        "0-3M White Short Sleeve": 21.99,
-        "0-3M White Long Sleeve": 22.99,
-        "0-3M Pink Short Sleeve": 27.99,
-        "0-3M Blue Short Sleeve": 27.99,
-        "3-6M White Short Sleeve": 21.99,
-        "3-6M White Long Sleeve": 22.99,
-        "3-6M Blue Short Sleeve": 27.99,
-        "3-6M Pink Short Sleeve": 27.99,
-        "6M Natural Short Sleeve": 27.99,
-        "6-9M White Short Sleeve": 21.99,
-        "6-9M White Long Sleeve": 22.99,
-        "6-9M Pink Short Sleeve": 27.99,
-        "6-9M Blue Short Sleeve": 27.99,
-        "12M White Short Sleeve": 21.99,
-        "12M White Long Sleeve": 22.99,
-        "12M Natural Short Sleeve": 27.99,
-        "12M Pink Short Sleeve": 27.99,
-        "12M Blue Short Sleeve": 27.99,
-        "18M White Short Sleeve": 21.99,
-        "18M White Long Sleeve": 22.99,
-        "18M Natural Short Sleeve": 27.99,
-        "24M White Short Sleeve": 21.99,
-        "24M White Long Sleeve": 22.99,
-        "24M Natural Short Sleeve": 27.99
+        # Short Sleeve — White = $29.99
+        "Newborn White Short Sleeve": 29.99,
+        "0-3M White Short Sleeve": 29.99,
+        "3-6M White Short Sleeve": 29.99,
+        "6-9M White Short Sleeve": 29.99,
+        "12M White Short Sleeve": 29.99,
+        "18M White Short Sleeve": 29.99,
+        "24M White Short Sleeve": 29.99,
+
+        # Short Sleeve — Natural = $33.99
+        "0-3M Natural Short Sleeve": 33.99,
+        "3-6M Natural Short Sleeve": 33.99,
+        "6-9M Natural Short Sleeve": 33.99,
+        "12M Natural Short Sleeve": 33.99,
+
+        # Short Sleeve — Pink = $33.99
+        "0-3M Pink Short Sleeve": 33.99,
+        "3-6M Pink Short Sleeve": 33.99,
+        "6-9M Pink Short Sleeve": 33.99,
+
+        # Short Sleeve — Blue = $33.99
+        "0-3M Blue Short Sleeve": 33.99,
+        "3-6M Blue Short Sleeve": 33.99,
+        "6-9M Blue Short Sleeve": 33.99,
+
+        # Long Sleeve — White = $30.99
+        "Newborn White Long Sleeve": 30.99,
+        "0-3M White Long Sleeve": 30.99,
+        "3-6M White Long Sleeve": 30.99,
+        "6-9M White Long Sleeve": 30.99,
+        "12M White Long Sleeve": 30.99,
+        "18M White Long Sleeve": 30.99,
+        "24M White Long Sleeve": 30.99,
     }
 
     parent_sku = f"{slug}-PARENT"
@@ -168,7 +250,8 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            # NEW: color + size variation theme (swatches)
+            "variation_theme": [{"attributes": ["color", "size"]}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": title}],
@@ -182,7 +265,7 @@ def generate_amazon_json_feed(title, image_url):
         }
     }]
 
-    for idx, variation in enumerate(variations, start=2):
+    for idx, variation in enumerate(VARIATIONS, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
 
@@ -197,6 +280,9 @@ def generate_amazon_json_feed(title, image_url):
             }] for i in range(5)
         }
 
+        # NEW: derive Size&Sleeve and approved color name
+        color_value, sleeve_type2, size_with_sleeve = extract_color_sleeve_size(variation)
+
         attributes = {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
@@ -207,14 +293,20 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
+            # match parent
+            "variation_theme": [{"attributes": ["color", "size"]}],
             "parentage_level": [{"value": "child"}],
             "child_parent_sku_relationship": [{
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            "size": [{"value": variation}],
-            "style": [{"value": sleeve_type}],
+
+            # SWATCH + SIZE&SLEEVE
+            "color": [{"value": color_value}],
+            "color_name": [{"value": color_value}],
+            "size": [{"value": size_with_sleeve}],
+            "style": [{"value": sleeve_type2}],
+
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
             "import_designation": [{"value": "Made in USA"}],
@@ -225,10 +317,10 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
-            "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": "multi"}],
+            "sleeve": [{"value": sleeve_type2}],
+
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
-                        "item_package_dimensions": [{
+            "item_package_dimensions": [{
                 "length": {"value": 3, "unit": "inches"},
                 "width": {"value": 3, "unit": "inches"},
                 "height": {"value": 1, "unit": "inches"}
@@ -414,3 +506,6 @@ if uploaded_files:
                 st.warning("⚠️ Feed not processed yet. Please check again later.")
         except Exception as e:
             st.error(f"❌ Error: {e}")
+```
+
+Want me to also rename the file to exactly `streamlit_app.py` for you?
