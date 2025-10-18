@@ -308,7 +308,7 @@ def submit_amazon_json_feed(json_feed, access_token):
         headers={"x-amz-access-token": access_token, "Content-Type": "application/json"},
         json={"contentType": "application/json"}
     )
-    if create_res.status_code not in (200, 201):
+    if create_res.status_code not in (200, 201, 202):
         raise RuntimeError(f"Create document failed {create_res.status_code}: {create_res.text}")
 
     doc = create_res.json()
@@ -319,7 +319,7 @@ def submit_amazon_json_feed(json_feed, access_token):
     # Upload JSON to presigned S3 URL
     up = requests.put(upload_url, data=json_feed.encode("utf-8"),
                       headers={"Content-Type": "application/json"})
-    if up.status_code not in (200, 201):
+    if up.status_code not in (200, 201, 202):
         raise RuntimeError(f"Upload failed {up.status_code}: {up.text}")
 
     # Submit feed
@@ -332,7 +332,7 @@ def submit_amazon_json_feed(json_feed, access_token):
             "inputFeedDocumentId": doc["feedDocumentId"]
         }
     )
-    if feed_res.status_code not in (200, 201):
+    if feed_res.status_code not in (200, 201, 202):
         raise RuntimeError(f"Submit feed failed {feed_res.status_code}: {feed_res.text}")
     return feed_res.json().get("feedId")
 
