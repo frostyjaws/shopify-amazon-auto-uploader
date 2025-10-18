@@ -200,8 +200,8 @@ def generate_amazon_json_feed(title, image_url):
             "import_designation": [{"value": IMPORT_DESIGNATION}],
             "supplier_declared_dg_hz_regulation": [{"value": DG_REG}],
             "batteries_required": [{"value": False}],
-            # VARIATION THEME: must include a name + attributes
-            "variation_theme": [{"name": "Size-Color", "attributes": ["size", "color"]}],
+            # ✅ Variation theme must be a valid approved value. Use Size only.
+            "variation_theme": [{"name": "Size", "attributes": ["size"]}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
@@ -231,8 +231,8 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_dg_hz_regulation": [{"value": DG_REG}],
             "batteries_required": [{"value": False}],
 
-            # Variation linkage
-            "variation_theme": [{"name": "Size-Color", "attributes": ["size", "color"]}],
+            # ✅ Variation linkage (Size theme only)
+            "variation_theme": [{"name": "Size", "attributes": ["size"]}],
             "parentage_level": [{"value": "child"}],
             "child_parent_sku_relationship": [{
                 "child_relationship_type": "variation",
@@ -240,7 +240,7 @@ def generate_amazon_json_feed(title, image_url):
             }],
 
             # Your requested fields
-            "size": [{"value": size_with_sleeve}],    # "0-3M - Short Sleeve"
+            "size": [{"value": size_with_sleeve}],    # e.g., "0-3M - Short Sleeve"
             "style": [{"value": sleeve_type}],        # "Short Sleeve" / "Long Sleeve"
             "color": [{"value": color_value}],        # "White", "Beige", "Light Pink", "Light Blue"
 
