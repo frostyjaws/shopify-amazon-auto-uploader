@@ -201,7 +201,7 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_dg_hz_regulation": [{"value": DG_REG}],
             "batteries_required": [{"value": False}],
             # VARIATION THEME: must include a name + attributes
-            "variation_theme": [{"name": "size_color", "attributes": ["size", "color"]}],
+            "variation_theme": [{"name": "Size-Color", "attributes": ["size", "color"]}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
@@ -232,7 +232,7 @@ def generate_amazon_json_feed(title, image_url):
             "batteries_required": [{"value": False}],
 
             # Variation linkage
-            "variation_theme": [{"name": "size_color", "attributes": ["size", "color"]}],
+            "variation_theme": [{"name": "Size-Color", "attributes": ["size", "color"]}],
             "parentage_level": [{"value": "child"}],
             "child_parent_sku_relationship": [{
                 "child_relationship_type": "variation",
