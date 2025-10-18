@@ -294,7 +294,7 @@ def get_amazon_access_token():
         "client_id": LWA_CLIENT_ID,
         "client_secret": LWA_CLIENT_SECRET
     })
-    if r.status_code != 200:
+    if r.status_code not in (200, 201):
         raise RuntimeError(f"LWA token fetch failed {r.status_code}: {r.text}")
     data = r.json()
     if "access_token" not in data:
@@ -309,7 +309,7 @@ def submit_amazon_json_feed(json_feed, access_token):
         json={"contentType": "application/json"}
     )
     if create_res.status_code not in (200, 201):
-    raise RuntimeError(f"Create document failed {create_res.status_code}: {create_res.text}")
+        raise RuntimeError(f"Create document failed {create_res.status_code}: {create_res.text}")
 
     doc = create_res.json()
     upload_url = doc.get("url") or doc.get("uploadDestinationUrl")
