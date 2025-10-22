@@ -77,7 +77,7 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
             "images": [{"src": image_url}]
         }
     }
-    r = requests.post(shopify_url, json=payload, headers=headers, verify=False)
+    r = requests.post(shopify_url, json=payload, headers=headers)
     r.raise_for_status()
     shopify_product = r.json()
     shopify_image_url = shopify_product["product"]["images"][0]["src"]
@@ -121,33 +121,33 @@ def generate_amazon_json_feed(title, image_url):
     slug = format_slug(title)
 
     price_map = {
-        "Newborn White Short Sleeve": 27.99,
-        "Newborn White Long Sleeve": 28.99,
-        "Newborn Natural Short Sleeve": 32.99,
-        "0-3M White Short Sleeve": 27.99,
-        "0-3M White Long Sleeve": 28.99,
-        "0-3M Pink Short Sleeve": 32.99,
-        "0-3M Blue Short Sleeve": 32.99,
-        "3-6M White Short Sleeve": 27.99,
-        "3-6M White Long Sleeve": 28.99,
-        "3-6M Blue Short Sleeve": 32.99,
-        "3-6M Pink Short Sleeve": 32.99,
-        "6M Natural Short Sleeve": 32.99,
-        "6-9M White Short Sleeve": 27.99,
-        "6-9M White Long Sleeve": 28.99,
-        "6-9M Pink Short Sleeve": 32.99,
-        "6-9M Blue Short Sleeve": 32.99,
-        "12M White Short Sleeve": 27.99,
-        "12M White Long Sleeve": 28.99,
-        "12M Natural Short Sleeve": 32.99,
-        "12M Pink Short Sleeve": 32.99,
-        "12M Blue Short Sleeve": 32.99,
-        "18M White Short Sleeve": 27.99,
-        "18M White Long Sleeve": 28.99,
-        "18M Natural Short Sleeve": 32.99,
-        "24M White Short Sleeve": 27.99,
-        "24M White Long Sleeve": 28.99,
-        "24M Natural Short Sleeve": 32.99
+        "Newborn White Short Sleeve": 21.99,
+        "Newborn White Long Sleeve": 22.99,
+        "Newborn Natural Short Sleeve": 27.99,
+        "0-3M White Short Sleeve": 21.99,
+        "0-3M White Long Sleeve": 22.99,
+        "0-3M Pink Short Sleeve": 27.99,
+        "0-3M Blue Short Sleeve": 27.99,
+        "3-6M White Short Sleeve": 21.99,
+        "3-6M White Long Sleeve": 22.99,
+        "3-6M Blue Short Sleeve": 27.99,
+        "3-6M Pink Short Sleeve": 27.99,
+        "6M Natural Short Sleeve": 27.99,
+        "6-9M White Short Sleeve": 21.99,
+        "6-9M White Long Sleeve": 22.99,
+        "6-9M Pink Short Sleeve": 27.99,
+        "6-9M Blue Short Sleeve": 27.99,
+        "12M White Short Sleeve": 21.99,
+        "12M White Long Sleeve": 22.99,
+        "12M Natural Short Sleeve": 27.99,
+        "12M Pink Short Sleeve": 27.99,
+        "12M Blue Short Sleeve": 27.99,
+        "18M White Short Sleeve": 21.99,
+        "18M White Long Sleeve": 22.99,
+        "18M Natural Short Sleeve": 27.99,
+        "24M White Short Sleeve": 21.99,
+        "24M White Long Sleeve": 22.99,
+        "24M Natural Short Sleeve": 27.99
     }
 
     parent_sku = f"{slug}-PARENT"
