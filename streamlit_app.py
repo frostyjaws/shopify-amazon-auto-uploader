@@ -32,11 +32,10 @@ BULLETS = [
     "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
-# -----------------------------
-# PRICE TABLE & VALID COMBOS
-# -----------------------------
-# Size text must include sleeve length. Color is a separate variation.
-# Only these combinations are generated (anything else is skipped).
+# =============================
+# PRICES & VALID COMBINATIONS
+# =============================
+# Size text must include sleeve length; color is separate for swatches.
 PRICE_TABLE = {
     # Short Sleeve, White ($29.99)
     ("Newborn - Short Sleeve", "White"): 29.99,
@@ -47,7 +46,7 @@ PRICE_TABLE = {
     ("18M - Short Sleeve", "White"): 29.99,
     ("24M - Short Sleeve", "White"): 29.99,
 
-    # Short Sleeve, Natural/Pink/Blue ($33.99) for these sizes
+    # Short Sleeve, Natural/Pink/Blue ($33.99) for selected sizes
     ("0-3M - Short Sleeve", "Natural"): 33.99,
     ("3-6M - Short Sleeve", "Natural"): 33.99,
     ("6-9M - Short Sleeve", "Natural"): 33.99,
@@ -73,17 +72,17 @@ PRICE_TABLE = {
     ("24M - Long Sleeve", "White"): 30.99,
 }
 
-# Map our "Natural" to Amazon's Beige color map for better swatch rendering.
-COLOR_MAP_MAP = {
+# Swatch labels to use in 'color' (no color_map attribute to avoid warnings)
+DISPLAY_COLOR = {
     "White": "White",
     "Pink": "Pink",
-    "Blue": "Light Blue",   # you asked for Light Blue swatch tone
-    "Natural": "Beige"      # Natural -> Beige on Amazon side
+    "Blue": "Light Blue",  # Amazon swatch label you requested
+    "Natural": "Beige",    # Natural → Beige swatch label
 }
 
-# -----------------------------
-# SHOPIFY IMAGE + PRODUCT
-# -----------------------------
+# =============================
+# SHOPIFY: UPLOAD + PRODUCT
+# =============================
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     uploaded_file.seek(0)
     imgbb_url = "https://api.imgbb.com/1/upload"
@@ -111,9 +110,9 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     shopify_image_url = shopify_product["product"]["images"][0]["src"]
     return shopify_image_url
 
-# -----------------------------
-# AMAZON LISTINGS JSON (SP-API)
-# -----------------------------
+# =============================
+# AMAZON: JSON LISTINGS FEED
+# =============================
 def generate_amazon_json_feed(title, image_url):
     import random
 
@@ -123,7 +122,6 @@ def generate_amazon_json_feed(title, image_url):
 
     def format_variation_sku(slug, size_text, color):
         # size_text like "0-3M - Short Sleeve"
-        # encode size token
         size_token = size_text.split(" - ")[0]
         size_code = (size_token
                      .replace("Newborn", "NB")
@@ -134,18 +132,18 @@ def generate_amazon_json_feed(title, image_url):
                      .replace("18M", "18M")
                      .replace("24M", "24M"))
         sleeve_code = "SS" if "Short" in size_text else "LS"
-        color_code = color[0].upper()
+        color_code = (DISPLAY_COLOR.get(color, color) or "X")[0].upper()
         return f"{slug}-{size_code}-{color_code}-{sleeve_code}"
 
     slug = format_slug(title)
     parent_sku = f"{slug}-PARENT"
 
-    # Parent message (no size/color on parent)
+    # Parent (no size/color on parent)
     messages = [{
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "LEOTARD",
+        "productType": "BABY_BODYSUIT",
         "requirements": "LISTING",
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
@@ -157,7 +155,7 @@ def generate_amazon_json_feed(title, image_url):
             "age_range_description": [{"value": "Infant"}],
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],  # two-dimension variation
+            "variation_theme": [{"name": "SIZE/COLOR"}],
             "parentage_level": [{"value": "parent"}],
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": title}],
@@ -177,15 +175,16 @@ def generate_amazon_json_feed(title, image_url):
 
     msg_id = 2
 
-    # Build children ONLY for combos in PRICE_TABLE
+    # Children for ONLY the combos defined in PRICE_TABLE
     for (size_text, color) in PRICE_TABLE.keys():
         price = PRICE_TABLE[(size_text, color)]
-        color_map = COLOR_MAP_MAP.get(color, color)
-
+        swatch_color = DISPLAY_COLOR.get(color, color)
         sku = format_variation_sku(slug, size_text, color)
 
+        sleeve_value = "Short Sleeve" if "Short" in size_text else "Long Sleeve"
+
         attributes = {
-            "item_name": [{"value": f"{title} - {size_text} - {color}"}],
+            "item_name": [{"value": f"{title} - {size_text} - {swatch_color}"}],
             "brand": [{"value": "NOFO VIBES"}],
             "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
             "product_description": [{"value": DESCRIPTION}],
@@ -202,14 +201,13 @@ def generate_amazon_json_feed(title, image_url):
                 "parent_sku": parent_sku
             }],
 
-            # IMPORTANT: Sleeve embedded in Size text; Color separate for swatches
+            # IMPORTANT: Size carries sleeve text. Color is a separate dimension (swatches).
             "size":  [{"value": size_text}],     # e.g. "0-3M - Short Sleeve"
-            "color": [{"value": color}],         # e.g. "Natural"
-            "color_map": [{"value": color_map}], # e.g. "Beige" for Natural
+            "color": [{"value": swatch_color}],  # e.g. "Light Blue" or "Beige"
 
-            # Optional styling fields for browse / search
-            "style":  [{"value": "Short Sleeve" if "Short" in size_text else "Long Sleeve"}],
-            "sleeve": [{"value": "Short Sleeve" if "Short" in size_text else "Long Sleeve"}],
+            # Optional browse fields (not used for swatch logic)
+            "style":  [{"value": sleeve_value}],
+            "sleeve": [{"value": sleeve_value}],
 
             "model_number": [{"value": "NBV"}],
             "model_name": [{"value": "Crew Neck Bodysuit"}],
@@ -230,7 +228,6 @@ def generate_amazon_json_feed(title, image_url):
             }],
             "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
 
-            # Each child can point to the same hero image if you don't have color-specific photos
             "main_product_image_locator": [{
                 "media_location": image_url,
                 "marketplace_id": "ATVPDKIKX0DER"
@@ -252,7 +249,7 @@ def generate_amazon_json_feed(title, image_url):
             "messageId": msg_id,
             "sku": sku,
             "operationType": "UPDATE",
-            "productType": "LEOTARD",
+            "productType": "BABY_BODYSUIT",
             "requirements": "LISTING",
             "attributes": attributes
         })
@@ -267,9 +264,9 @@ def generate_amazon_json_feed(title, image_url):
         "messages": messages
     }, indent=2)
 
-# -----------------------------
+# =============================
 # AUTH & FEED HELPERS
-# -----------------------------
+# =============================
 def get_amazon_access_token():
     r = requests.post("https://api.amazon.com/auth/o2/token", data={
         "grant_type": "refresh_token",
@@ -324,9 +321,9 @@ def download_amazon_processing_report(feed_status, access_token):
     report.raise_for_status()
     return report.text
 
-# -----------------------------
-# STREAMLIT UI (MULTI FILE)
-# -----------------------------
+# =============================
+# STREAMLIT UI (MULTI-FILE)
+# =============================
 uploaded_files = st.file_uploader(
     "Upload PNG Files (Hold Ctrl or Shift to select multiple)",
     type="png",
@@ -359,7 +356,7 @@ if uploaded_files:
     if all_messages:
         st.markdown("## 📡 Submitting Combined Feed to Amazon...")
         try:
-            # Reassign message IDs to avoid duplication
+            # Renumber message IDs to be unique across all files
             for idx, msg in enumerate(all_messages, start=1):
                 msg["messageId"] = idx
 
