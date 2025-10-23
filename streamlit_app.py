@@ -14,6 +14,8 @@ REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
 MARKETPLACE_ID = st.secrets["MARKETPLACE_ID"]
 SELLER_ID = st.secrets["SELLER_ID"]
 
+PRODUCT_TYPE = "LEOTARD"  # stick with what works
+
 DESCRIPTION = """
 <p>Celebrate the arrival of your little one with our adorable Custom Baby onesie&reg;, the perfect baby shower gift that will be cherished for years to come. This charming piece of baby clothing is an ideal new baby gift for welcoming a newborn into the world. Whether it's for a baby announcement, a pregnancy reveal, or a special baby shower, this baby onesie&reg; is sure to delight.</p>
 <p>Our Custom Baby onesie&reg; features a playful and cute design, perfect for showcasing your baby's unique personality. Made with love and care, this baby onesie&reg; is designed to keep your baby comfortable and stylish. It's an essential item in cute baby clothes, making it a standout piece for any new arrival.</p>
@@ -35,7 +37,7 @@ BULLETS = [
 # =============================
 # PRICES & VALID COMBINATIONS
 # =============================
-# Size text must include sleeve length; color is separate for swatches.
+# Size text includes sleeve; Color is separate (drives swatches).
 PRICE_TABLE = {
     # Short Sleeve, White ($29.99)
     ("Newborn - Short Sleeve", "White"): 29.99,
@@ -72,12 +74,12 @@ PRICE_TABLE = {
     ("24M - Long Sleeve", "White"): 30.99,
 }
 
-# Swatch labels to use in 'color' (no color_map attribute to avoid warnings)
+# Swatch labels to use in 'color' (no color_map to avoid warnings)
 DISPLAY_COLOR = {
     "White": "White",
     "Pink": "Pink",
-    "Blue": "Light Blue",  # Amazon swatch label you requested
-    "Natural": "Beige",    # Natural → Beige swatch label
+    "Blue": "Light Blue",  # you requested Light Blue swatch
+    "Natural": "Beige",    # Natural → Beige swatch
 }
 
 # =============================
@@ -143,7 +145,7 @@ def generate_amazon_json_feed(title, image_url):
         "messageId": 1,
         "sku": parent_sku,
         "operationType": "UPDATE",
-        "productType": "BABY_BODYSUIT",
+        "productType": PRODUCT_TYPE,  # LEOTARD
         "requirements": "LISTING",
         "attributes": {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
@@ -180,7 +182,6 @@ def generate_amazon_json_feed(title, image_url):
         price = PRICE_TABLE[(size_text, color)]
         swatch_color = DISPLAY_COLOR.get(color, color)
         sku = format_variation_sku(slug, size_text, color)
-
         sleeve_value = "Short Sleeve" if "Short" in size_text else "Long Sleeve"
 
         attributes = {
@@ -201,9 +202,9 @@ def generate_amazon_json_feed(title, image_url):
                 "parent_sku": parent_sku
             }],
 
-            # IMPORTANT: Size carries sleeve text. Color is a separate dimension (swatches).
+            # Size carries sleeve; Color drives swatch
             "size":  [{"value": size_text}],     # e.g. "0-3M - Short Sleeve"
-            "color": [{"value": swatch_color}],  # e.g. "Light Blue" or "Beige"
+            "color": [{"value": swatch_color}],  # e.g. "Light Blue" / "Beige" / "Pink" / "White"
 
             # Optional browse fields (not used for swatch logic)
             "style":  [{"value": sleeve_value}],
@@ -249,7 +250,7 @@ def generate_amazon_json_feed(title, image_url):
             "messageId": msg_id,
             "sku": sku,
             "operationType": "UPDATE",
-            "productType": "BABY_BODYSUIT",
+            "productType": PRODUCT_TYPE,  # LEOTARD
             "requirements": "LISTING",
             "attributes": attributes
         })
