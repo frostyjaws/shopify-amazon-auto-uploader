@@ -4,6 +4,7 @@ import os
 import json
 from PIL import Image
 from io import BytesIO
+import random
 
 # === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
@@ -39,10 +40,10 @@ BULLETS =  [
     "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
-# === NEW VARIATIONS (Size + Color + Price)
-# Size includes sleeve length and will be stored under "size".
-# Color is stored under "color".
-VARIATIONS = [
+# === VARIATIONS SPLIT INTO SHORT-SLEEVE PARENT AND LONG-SLEEVE PARENT ===
+
+SHORT_SLEEVE_VARIATIONS = [
+    # (size_label, color_label, price)
     ("Newborn Short Sleeve", "White", 29.99),
     ("0–3M Short Sleeve", "White", 29.99),
     ("3–6M Short Sleeve", "White", 29.99),
@@ -63,7 +64,10 @@ VARIATIONS = [
     ("0–3M Short Sleeve", "Blue", 33.99),
     ("3–6M Short Sleeve", "Blue", 33.99),
     ("6–9M Short Sleeve", "Blue", 33.99),
+]
 
+LONG_SLEEVE_VARIATIONS = [
+    # White only, long sleeve
     ("Newborn Long Sleeve", "White", 30.99),
     ("0–3M Long Sleeve", "White", 30.99),
     ("3–6M Long Sleeve", "White", 30.99),
@@ -108,26 +112,18 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
-    import random
     import json
 
-    # we stop using old hardcoded variations/price_map and instead use VARIATIONS above.
-    # title stays the same logic.
-    # we keep your slug logic format_slug() and format_variation_sku() even though we changed variation structure.
-    # We're going to adapt SKU building to new (size,color) pairs without touching the rest of the app.
-
+    # keep your slug style: first letters of words + random 4 digits
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
         return f"{slug}-{random.randint(1000, 9999)}"
 
+    # we keep the SKU style: slug-SIZECODE-COLORCODE-SLEEVE
     def format_variation_sku(slug, size_label, color_label):
-        # keep overall style "[slug]-[size-abbrev]-[color-abbrev]-[sleeve]"
-        # using same pattern you had before: size code / color 1-letter / sleeve SS or LS
-        # We will build from size_label and color_label since we no longer have one big string.
-        parts = size_label.split()  # e.g. ["0–3M","Short","Sleeve"]
-        base_size = parts[0]  # "0–3M", "Newborn", "12M", etc.
+        parts = size_label.split()  # e.g. ["0–3M","Short","Sleeve"] or ["12M","Long","Sleeve"]
+        base_size = parts[0]        # "0–3M", "12M", "Newborn", etc.
 
-        # normalize to codes like your original:
         size_code = (
             base_size
             .replace("Newborn", "NB")
@@ -143,21 +139,13 @@ def generate_amazon_json_feed(title, image_url):
             .replace("24M", "24M")
         )
 
-        # color first letter upper
         color_code = color_label[0].upper()
-
-        # sleeve code
         sleeve_code = "SS" if "Short" in size_label else "LS"
 
         return f"{slug}-{size_code}-{color_code}-{sleeve_code}"
 
     def build_child_attributes(parent_sku, size_label, color_label, price_value):
         sleeve_type = "Short Sleeve" if "Short" in size_label else "Long Sleeve"
-
-        # replicate your attribute structure but now:
-        # - "size" gets size_label (ex: "0–3M Short Sleeve")
-        # - "color" gets color_label (ex: "White")
-        # - price_value is per that combo
 
         other_product_images = {
             f"other_product_image_locator_{i+1}": [{
@@ -186,7 +174,6 @@ def generate_amazon_json_feed(title, image_url):
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            # NEW: send size_label as size, color_label as color
             "size": [{"value": size_label}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "NBV"}],
@@ -200,7 +187,6 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            # NEW: proper color value
             "color": [{"value": color_label}],
             "list_price": [{"currency": "USD", "value": price_value}],
             "item_package_dimensions": [{
@@ -227,12 +213,16 @@ def generate_amazon_json_feed(title, image_url):
         }
 
     slug = format_slug(title)
-    parent_sku = f"{slug}-PARENT"
 
-    # Parent message stays same structure, unchanged other than we didn't touch logic you already had.
-    messages = [{
+    short_parent_sku = f"{slug}-SHORT-PARENT"
+    long_parent_sku = f"{slug}-LONG-PARENT"
+
+    messages = []
+
+    # Parent A: short sleeve family
+    messages.append({
         "messageId": 1,
-        "sku": parent_sku,
+        "sku": short_parent_sku,
         "operationType": "UPDATE",
         "productType": "LEOTARD",
         "requirements": "LISTING",
@@ -258,23 +248,69 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
             "supplier_declared_has_product_identifier_exemption": [{"value": True}]
         }
-    }]
+    })
 
-    # Build each child from VARIATIONS (size_label, color_label, price_value)
-    message_id_counter = 2
-    for (size_label, color_label, price_value) in VARIATIONS:
+    # Parent B: long sleeve family
+    messages.append({
+        "messageId": 2,
+        "sku": long_parent_sku,
+        "operationType": "UPDATE",
+        "productType": "LEOTARD",
+        "requirements": "LISTING",
+        "attributes": {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute Long Sleeve"}],
+            "brand": [{"value": "NOFO VIBES"}],
+            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
+            "product_description": [{"value": DESCRIPTION}],
+            "bullet_point": [{"value": b} for b in BULLETS],
+            "target_gender": [{"value": "female"}],
+            "age_range_description": [{"value": "Infant"}],
+            "material": [{"value": "Cotton"}],
+            "department": [{"value": "Baby Girls"}],
+            "variation_theme": [{"name": "SIZE/COLOR"}],
+            "parentage_level": [{"value": "parent"}],
+            "model_number": [{"value": "NBV"}],
+            "model_name": [{"value": title + " Long Sleeve"}],
+            "import_designation": [{"value": "Imported"}],
+            "country_of_origin": [{"value": "US"}],
+            "condition_type": [{"value": "new_new"}],
+            "batteries_required": [{"value": False}],
+            "fabric_type": [{"value": "100% cotton"}],
+            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
+        }
+    })
+
+    # Children under short-sleeve parent
+    msg_id = 3
+    for (size_label, color_label, price_value) in SHORT_SLEEVE_VARIATIONS:
         sku = format_variation_sku(slug, size_label, color_label)
-        child_attributes = build_child_attributes(parent_sku, size_label, color_label, price_value)
+        attrs = build_child_attributes(short_parent_sku, size_label, color_label, price_value)
 
         messages.append({
-            "messageId": message_id_counter,
+            "messageId": msg_id,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "LEOTARD",
             "requirements": "LISTING",
-            "attributes": child_attributes
+            "attributes": attrs
         })
-        message_id_counter += 1
+        msg_id += 1
+
+    # Children under long-sleeve parent
+    for (size_label, color_label, price_value) in LONG_SLEEVE_VARIATIONS:
+        sku = format_variation_sku(slug, size_label, color_label)
+        attrs = build_child_attributes(long_parent_sku, size_label, color_label, price_value)
+
+        messages.append({
+            "messageId": msg_id,
+            "sku": sku,
+            "operationType": "UPDATE",
+            "productType": "LEOTARD",
+            "requirements": "LISTING",
+            "attributes": attrs
+        })
+        msg_id += 1
 
     return json.dumps({
         "header": {
@@ -412,7 +448,6 @@ if uploaded_files:
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
-            # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
