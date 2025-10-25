@@ -1,3 +1,16 @@
+Thanks for the screenshot — that helps.
+
+The blank screen is happening because the code you’re running right now is **not a full Streamlit app anymore.** The version I last sent only included the top half (definitions, functions) but not the actual UI code at the bottom that renders widgets and runs the workflow. So Streamlit boots, installs deps, and then… nothing to draw → black screen.
+
+I’m going to give you the **entire full app.py / streamlit_app.py** in one copy box, start to finish:
+
+* keeps all your original logic (multi-file uploader, Shopify upload, Amazon feed submit, status check, etc.)
+* uses the updated VARIATIONS and price_map you wanted
+* includes the UI block so Streamlit actually renders
+
+👉 Replace your whole file with this:
+
+```python
 import streamlit as st
 import requests
 import os
@@ -39,6 +52,7 @@ BULLETS = [
     "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
+# UPDATED VARIATIONS MASTER LIST (the only combos you actually sell)
 VARIATIONS = [
     # White Short Sleeve
     "Newborn White Short Sleeve",
@@ -75,7 +89,9 @@ VARIATIONS = [
     "24M White Long Sleeve",
 ]
 
+
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
+    # upload PNG to imgbb
     uploaded_file.seek(0)
     imgbb_url = "https://api.imgbb.com/1/upload"
     files = {
@@ -87,6 +103,7 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     response.raise_for_status()
     image_url = response.json()["data"]["url"]
 
+    # create product in Shopify
     shopify_url = f"https://{SHOPIFY_STORE}/admin/api/2023-01/products.json"
     headers = {
         "X-Shopify-Access-Token": SHOPIFY_TOKEN,
@@ -109,17 +126,21 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     shopify_image_url = shopify_product["product"]["images"][0]["src"]
     return shopify_image_url
 
+
 def generate_amazon_json_feed(title, image_url):
     import random
     import json
 
+    # use same global list
     variations = VARIATIONS
 
     def format_slug(title):
+        # short SKU base like ABC-1234
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
         return f"{slug}-{random.randint(1000, 9999)}"
 
     def format_variation_sku(slug, variation):
+        # turn "0-3M White Short Sleeve" -> "03M-W-SS"
         parts = variation.split()
         size = (
             parts[0]
@@ -136,6 +157,7 @@ def generate_amazon_json_feed(title, image_url):
         return f"{slug}-{size}-{color}-{sleeve}"
 
     def extract_color_and_sleeve(variation):
+        # "0-3M Blue Short Sleeve" -> ("Blue", "Short Sleeve")
         color_map = "White"
         sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
         for word in variation.split():
@@ -145,8 +167,9 @@ def generate_amazon_json_feed(title, image_url):
 
     slug = format_slug(title)
 
+    # UPDATED PRICE MAP FROM YOUR CHART
     price_map = {
-        # White Short Sleeve
+        # White Short Sleeve ($29.99)
         "Newborn White Short Sleeve": 29.99,
         "0-3M White Short Sleeve": 29.99,
         "3-6M White Short Sleeve": 29.99,
@@ -155,23 +178,23 @@ def generate_amazon_json_feed(title, image_url):
         "18M White Short Sleeve": 29.99,
         "24M White Short Sleeve": 29.99,
 
-        # Natural Short Sleeve
+        # Natural Short Sleeve ($33.99)
         "0-3M Natural Short Sleeve": 33.99,
         "3-6M Natural Short Sleeve": 33.99,
         "6-9M Natural Short Sleeve": 33.99,
         "12M Natural Short Sleeve": 33.99,
 
-        # Pink Short Sleeve
+        # Pink Short Sleeve ($33.99)
         "0-3M Pink Short Sleeve": 33.99,
         "3-6M Pink Short Sleeve": 33.99,
         "6-9M Pink Short Sleeve": 33.99,
 
-        # Blue Short Sleeve
+        # Blue Short Sleeve ($33.99)
         "0-3M Blue Short Sleeve": 33.99,
         "3-6M Blue Short Sleeve": 33.99,
         "6-9M Blue Short Sleeve": 33.99,
 
-        # White Long Sleeve
+        # White Long Sleeve ($30.99)
         "Newborn White Long Sleeve": 30.99,
         "0-3M White Long Sleeve": 30.99,
         "3-6M White Long Sleeve": 30.99,
@@ -183,6 +206,7 @@ def generate_amazon_json_feed(title, image_url):
 
     parent_sku = f"{slug}-PARENT"
 
+    # parent message
     messages = [{
         "messageId": 1,
         "sku": parent_sku,
@@ -213,6 +237,7 @@ def generate_amazon_json_feed(title, image_url):
         }
     }]
 
+    # each child variation row
     for idx, variation in enumerate(variations, start=2):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
@@ -235,13 +260,18 @@ def generate_amazon_json_feed(title, image_url):
             }],
             "size": [{"value": variation}],
             "style": [{"value": sleeve_type}],
+            "sleeve": [{"value": sleeve_type}],
             "color": [{"value": color_map}],
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "fulfillment_availability": [{
                 "quantity": 999,
                 "fulfillment_channel_code": "DEFAULT",
                 "marketplace_id": "ATVPDKIKX0DER"
-            }]
+            }],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
         }
 
         messages.append({
@@ -261,3 +291,183 @@ def generate_amazon_json_feed(title, image_url):
         },
         "messages": messages
     }, indent=2)
+
+
+def get_amazon_access_token():
+    r = requests.post(
+        "https://api.amazon.com/auth/o2/token",
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": REFRESH_TOKEN,
+            "client_id": LWA_CLIENT_ID,
+            "client_secret": LWA_CLIENT_SECRET,
+        },
+    )
+    r.raise_for_status()
+    return r.json()["access_token"]
+
+
+def submit_amazon_json_feed(json_feed, access_token):
+    # 1. create feed document (where we're supposed to upload the JSON)
+    doc_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents",
+        headers={
+            "x-amz-access-token": access_token,
+            "Content-Type": "application/json",
+        },
+        json={"contentType": "application/json"},
+    )
+    doc_res.raise_for_status()
+    doc = doc_res.json()
+
+    # 2. upload feed body to that pre-signed URL
+    upload = requests.put(
+        doc["url"],
+        data=json_feed.encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    upload.raise_for_status()
+
+    # 3. tell Amazon "process that doc as a JSON_LISTINGS_FEED"
+    feed_res = requests.post(
+        "https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds",
+        headers={
+            "x-amz-access-token": access_token,
+            "Content-Type": "application/json",
+        },
+        json={
+            "feedType": "JSON_LISTINGS_FEED",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "inputFeedDocumentId": doc["feedDocumentId"],
+        },
+    )
+    feed_res.raise_for_status()
+    return feed_res.json()["feedId"]
+
+
+def check_amazon_feed_status(feed_id, access_token):
+    res = requests.get(
+        f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/feeds/{feed_id}",
+        headers={
+            "x-amz-access-token": access_token,
+            "Content-Type": "application/json",
+        },
+    )
+    res.raise_for_status()
+    return res.json()
+
+
+def download_amazon_processing_report(feed_status, access_token):
+    doc_id = feed_status.get("resultFeedDocumentId")
+    if not doc_id:
+        return "Processing report not available yet."
+
+    doc_info = requests.get(
+        f"https://sellingpartnerapi-na.amazon.com/feeds/2021-06-30/documents/{doc_id}",
+        headers={"x-amz-access-token": access_token},
+    ).json()
+
+    report = requests.get(doc_info["url"])
+    report.raise_for_status()
+    return report.text
+
+
+# === UI ===
+
+st.set_page_config(page_title="Shopify + Amazon Uploader", page_icon="🍼", layout="wide")
+st.title("🍼 Shopify + Amazon Auto Uploader")
+st.caption("Upload PNG → Create Shopify product → Build + Submit Amazon feed with all variations.")
+
+uploaded_files = st.file_uploader(
+    "Upload PNG Files (Hold Ctrl or Shift to select multiple)",
+    type="png",
+    accept_multiple_files=True,
+)
+
+if uploaded_files:
+    all_messages = []
+    all_skus = []
+
+    for uploaded_file in uploaded_files:
+        st.markdown(f"---\n### 📦 Processing: `{uploaded_file.name}`")
+
+        try:
+            # derive title + handle from filename
+            file_stem = os.path.splitext(uploaded_file.name)[0]
+            title_full = file_stem.replace("-", " ").replace("_", " ").title() + " - Baby Bodysuit"
+            handle = (
+                file_stem.lower()
+                .replace(" ", "-")
+                .replace("_", "-")
+                + "-baby-bodysuit"
+            )
+
+            # preview image
+            image = Image.open(uploaded_file)
+            st.image(image, caption=title_full, use_container_width=True)
+
+            st.info("Uploading to ImgBB + Creating product on Shopify...")
+            uploaded_file.seek(0)
+            shopify_image_url = upload_and_create_shopify_product(
+                uploaded_file, handle, title_full
+            )
+            st.success("✅ Shopify Product Created")
+
+            st.info("Generating Amazon Feed for this design...")
+            json_feed_for_this_file = json.loads(
+                generate_amazon_json_feed(file_stem, shopify_image_url)
+            )
+
+            # stash messages for later combined submit
+            all_messages.extend(json_feed_for_this_file["messages"])
+
+            for msg in json_feed_for_this_file["messages"]:
+                if msg.get("sku"):
+                    all_skus.append(msg["sku"])
+
+            st.code(json.dumps(json_feed_for_this_file, indent=2), language="json")
+
+        except Exception as e:
+            st.error(f"❌ Error processing {uploaded_file.name}: {e}")
+
+    # after loop, allow submit of combined feed
+    if all_messages:
+        st.markdown("## 📡 Submit Combined Feed to Amazon")
+
+        # de-dupe messageId so Amazon doesn't freak
+        for idx, msg in enumerate(all_messages, start=1):
+            msg["messageId"] = idx
+
+        full_feed_payload = {
+            "header": {
+                "sellerId": SELLER_ID,
+                "version": "2.0",
+                "issueLocale": "en_US",
+            },
+            "messages": all_messages,
+        }
+
+        if st.button("🚀 Submit Feed to Amazon"):
+            try:
+                token = get_amazon_access_token()
+                feed_id = submit_amazon_json_feed(
+                    json.dumps(full_feed_payload), token
+                )
+                st.success(f"✅ Feed Submitted to Amazon — Feed ID: {feed_id}")
+
+                st.info("Checking Feed Status...")
+                status = check_amazon_feed_status(feed_id, token)
+                st.code(json.dumps(status, indent=2), language="json")
+
+                if status.get("processingStatus") == "DONE":
+                    st.info("Downloading Processing Report...")
+                    report = download_amazon_processing_report(status, token)
+                    st.code(report)
+                else:
+                    st.warning("⚠️ Feed not processed yet. Check again later.")
+            except Exception as e:
+                st.error(f"❌ Error submitting combined feed: {e}")
+
+st.markdown("------")
+st.caption("USE SIZE CHART / VARIATION MATRIX ABOVE FOR ALL LISTINGS.")
+```
