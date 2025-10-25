@@ -1,10 +1,10 @@
+```python
 import streamlit as st
 import requests
 import os
 import json
 from PIL import Image
 from io import BytesIO
-import random
 
 # === CREDENTIALS ===
 SHOPIFY_TOKEN = st.secrets["SHOPIFY_TOKEN"]
@@ -40,41 +40,40 @@ BULLETS =  [
     "📏Versatile Sizing & Colors: Available in a range of sizes and colors, ensuring the perfect fit. Check our newborn outfit boy and girl sizing guide to find the right one for your little one."
 ]
 
-# === VARIATIONS SPLIT INTO SHORT-SLEEVE PARENT AND LONG-SLEEVE PARENT ===
+VARIATIONS = [
+    # White Short Sleeve
+    "Newborn White Short Sleeve",
+    "0-3M White Short Sleeve",
+    "3-6M White Short Sleeve",
+    "6-9M White Short Sleeve",
+    "12M White Short Sleeve",
+    "18M White Short Sleeve",
+    "24M White Short Sleeve",
 
-SHORT_SLEEVE_VARIATIONS = [
-    # (size_label, color_label, price)
-    ("Newborn Short Sleeve", "White", 29.99),
-    ("0–3M Short Sleeve", "White", 29.99),
-    ("3–6M Short Sleeve", "White", 29.99),
-    ("6–9M Short Sleeve", "White", 29.99),
-    ("12M Short Sleeve", "White", 29.99),
-    ("18M Short Sleeve", "White", 29.99),
-    ("24M Short Sleeve", "White", 29.99),
+    # Natural Short Sleeve
+    "0-3M Natural Short Sleeve",
+    "3-6M Natural Short Sleeve",
+    "6-9M Natural Short Sleeve",
+    "12M Natural Short Sleeve",
 
-    ("0–3M Short Sleeve", "Natural", 33.99),
-    ("3–6M Short Sleeve", "Natural", 33.99),
-    ("6–9M Short Sleeve", "Natural", 33.99),
-    ("12M Short Sleeve", "Natural", 33.99),
+    # Pink Short Sleeve
+    "0-3M Pink Short Sleeve",
+    "3-6M Pink Short Sleeve",
+    "6-9M Pink Short Sleeve",
 
-    ("0–3M Short Sleeve", "Pink", 33.99),
-    ("3–6M Short Sleeve", "Pink", 33.99),
-    ("6–9M Short Sleeve", "Pink", 33.99),
+    # Blue Short Sleeve
+    "0-3M Blue Short Sleeve",
+    "3-6M Blue Short Sleeve",
+    "6-9M Blue Short Sleeve",
 
-    ("0–3M Short Sleeve", "Blue", 33.99),
-    ("3–6M Short Sleeve", "Blue", 33.99),
-    ("6–9M Short Sleeve", "Blue", 33.99),
-]
-
-LONG_SLEEVE_VARIATIONS = [
-    # White only, long sleeve
-    ("Newborn Long Sleeve", "White", 30.99),
-    ("0–3M Long Sleeve", "White", 30.99),
-    ("3–6M Long Sleeve", "White", 30.99),
-    ("6–9M Long Sleeve", "White", 30.99),
-    ("12M Long Sleeve", "White", 30.99),
-    ("18M Long Sleeve", "White", 30.99),
-    ("24M Long Sleeve", "White", 30.99),
+    # White Long Sleeve
+    "Newborn White Long Sleeve",
+    "0-3M White Long Sleeve",
+    "3-6M White Long Sleeve",
+    "6-9M White Long Sleeve",
+    "12M White Long Sleeve",
+    "18M White Long Sleeve",
+    "24M White Long Sleeve",
 ]
 
 def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
@@ -112,117 +111,116 @@ def upload_and_create_shopify_product(uploaded_file, title_slug, title_full):
     return shopify_image_url
 
 def generate_amazon_json_feed(title, image_url):
+    import random
     import json
 
-    # keep your slug style: first letters of words + random 4 digits
+    variations = [
+        # White Short Sleeve
+        "Newborn White Short Sleeve",
+        "0-3M White Short Sleeve",
+        "3-6M White Short Sleeve",
+        "6-9M White Short Sleeve",
+        "12M White Short Sleeve",
+        "18M White Short Sleeve",
+        "24M White Short Sleeve",
+
+        # Natural Short Sleeve
+        "0-3M Natural Short Sleeve",
+        "3-6M Natural Short Sleeve",
+        "6-9M Natural Short Sleeve",
+        "12M Natural Short Sleeve",
+
+        # Pink Short Sleeve
+        "0-3M Pink Short Sleeve",
+        "3-6M Pink Short Sleeve",
+        "6-9M Pink Short Sleeve",
+
+        # Blue Short Sleeve
+        "0-3M Blue Short Sleeve",
+        "3-6M Blue Short Sleeve",
+        "6-9M Blue Short Sleeve",
+
+        # White Long Sleeve
+        "Newborn White Long Sleeve",
+        "0-3M White Long Sleeve",
+        "3-6M White Long Sleeve",
+        "6-9M White Long Sleeve",
+        "12M White Long Sleeve",
+        "18M White Long Sleeve",
+        "24M White Long Sleeve",
+    ]
+
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
         return f"{slug}-{random.randint(1000, 9999)}"
 
-    # we keep the SKU style: slug-SIZECODE-COLORCODE-SLEEVE
-    def format_variation_sku(slug, size_label, color_label):
-        parts = size_label.split()  # e.g. ["0–3M","Short","Sleeve"] or ["12M","Long","Sleeve"]
-        base_size = parts[0]        # "0–3M", "12M", "Newborn", etc.
-
-        size_code = (
-            base_size
+    def format_variation_sku(slug, variation):
+        parts = variation.split()
+        size = (
+            parts[0]
             .replace("Newborn", "NB")
-            .replace("0–3M", "03M")
             .replace("0-3M", "03M")
-            .replace("3–6M", "36M")
             .replace("3-6M", "36M")
-            .replace("6–9M", "69M")
             .replace("6-9M", "69M")
-            .replace("6M", "06M")
             .replace("12M", "12M")
             .replace("18M", "18M")
             .replace("24M", "24M")
         )
+        color = parts[1][0].upper()
+        sleeve = "SS" if "Short" in variation else "LS"
+        return f"{slug}-{size}-{color}-{sleeve}"
 
-        color_code = color_label[0].upper()
-        sleeve_code = "SS" if "Short" in size_label else "LS"
-
-        return f"{slug}-{size_code}-{color_code}-{sleeve_code}"
-
-    def build_child_attributes(parent_sku, size_label, color_label, price_value):
-        sleeve_type = "Short Sleeve" if "Short" in size_label else "Long Sleeve"
-
-        other_product_images = {
-            f"other_product_image_locator_{i+1}": [{
-                "media_location": [
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115"
-                ][i % 3],
-                "marketplace_id": "ATVPDKIKX0DER"
-            }] for i in range(5)
-        }
-
-        return {
-            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
-            "brand": [{"value": "NOFO VIBES"}],
-            "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
-            "product_description": [{"value": DESCRIPTION}],
-            "bullet_point": [{"value": b} for b in BULLETS],
-            "target_gender": [{"value": "female"}],
-            "age_range_description": [{"value": "Infant"}],
-            "material": [{"value": "Cotton"}],
-            "department": [{"value": "Baby Girls"}],
-            "variation_theme": [{"name": "SIZE/COLOR"}],
-            "parentage_level": [{"value": "child"}],
-            "child_parent_sku_relationship": [{
-                "child_relationship_type": "variation",
-                "parent_sku": parent_sku
-            }],
-            "size": [{"value": size_label}],
-            "style": [{"value": sleeve_type}],
-            "model_number": [{"value": "NBV"}],
-            "model_name": [{"value": "Crew Neck Bodysuit"}],
-            "import_designation": [{"value": "Made in USA"}],
-            "country_of_origin": [{"value": "US"}],
-            "condition_type": [{"value": "new_new"}],
-            "batteries_required": [{"value": False}],
-            "fabric_type": [{"value": "100% cotton"}],
-            "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
-            "care_instructions": [{"value": "Machine Wash"}],
-            "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": color_label}],
-            "list_price": [{"currency": "USD", "value": price_value}],
-            "item_package_dimensions": [{
-                "length": {"value": 3, "unit": "inches"},
-                "width": {"value": 3, "unit": "inches"},
-                "height": {"value": 1, "unit": "inches"}
-            }],
-            "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
-            "main_product_image_locator": [{
-                "media_location": image_url,
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            **other_product_images,
-            "purchasable_offer": [{
-                "currency": "USD",
-                "our_price": [{"schedule": [{"value_with_tax": price_value}]}],
-                "marketplace_id": "ATVPDKIKX0DER"
-            }],
-            "fulfillment_availability": [{
-                "quantity": 999,
-                "fulfillment_channel_code": "DEFAULT",
-                "marketplace_id": "ATVPDKIKX0DER"
-            }]
-        }
+    def extract_color_and_sleeve(variation):
+        color_map = "White"
+        sleeve_type = "Short Sleeve" if "Short" in variation else "Long Sleeve"
+        for word in variation.split():
+            if word.lower() in ["white", "pink", "blue", "natural"]:
+                color_map = word.capitalize()
+        return color_map, sleeve_type
 
     slug = format_slug(title)
 
-    short_parent_sku = f"{slug}-SHORT-PARENT"
-    long_parent_sku = f"{slug}-LONG-PARENT"
+    price_map = {
+        # White Short Sleeve
+        "Newborn White Short Sleeve": 29.99,
+        "0-3M White Short Sleeve": 29.99,
+        "3-6M White Short Sleeve": 29.99,
+        "6-9M White Short Sleeve": 29.99,
+        "12M White Short Sleeve": 29.99,
+        "18M White Short Sleeve": 29.99,
+        "24M White Short Sleeve": 29.99,
 
-    messages = []
+        # Natural Short Sleeve
+        "0-3M Natural Short Sleeve": 33.99,
+        "3-6M Natural Short Sleeve": 33.99,
+        "6-9M Natural Short Sleeve": 33.99,
+        "12M Natural Short Sleeve": 33.99,
 
-    # Parent A: short sleeve family
-    messages.append({
+        # Pink Short Sleeve
+        "0-3M Pink Short Sleeve": 33.99,
+        "3-6M Pink Short Sleeve": 33.99,
+        "6-9M Pink Short Sleeve": 33.99,
+
+        # Blue Short Sleeve
+        "0-3M Blue Short Sleeve": 33.99,
+        "3-6M Blue Short Sleeve": 33.99,
+        "6-9M Blue Short Sleeve": 33.99,
+
+        # White Long Sleeve
+        "Newborn White Long Sleeve": 30.99,
+        "0-3M White Long Sleeve": 30.99,
+        "3-6M White Long Sleeve": 30.99,
+        "6-9M White Long Sleeve": 30.99,
+        "12M White Long Sleeve": 30.99,
+        "18M White Long Sleeve": 30.99,
+        "24M White Long Sleeve": 30.99,
+    }
+
+    parent_sku = f"{slug}-PARENT"
+
+    messages = [{
         "messageId": 1,
-        "sku": short_parent_sku,
+        "sku": parent_sku,
         "operationType": "UPDATE",
         "productType": "LEOTARD",
         "requirements": "LISTING",
@@ -248,17 +246,25 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
             "supplier_declared_has_product_identifier_exemption": [{"value": True}]
         }
-    })
+    }]
 
-    # Parent B: long sleeve family
-    messages.append({
-        "messageId": 2,
-        "sku": long_parent_sku,
-        "operationType": "UPDATE",
-        "productType": "LEOTARD",
-        "requirements": "LISTING",
-        "attributes": {
-            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute Long Sleeve"}],
+    for idx, variation in enumerate(variations, start=2):
+        sku = format_variation_sku(slug, variation)
+        color_map, sleeve_type = extract_color_and_sleeve(variation)
+
+        other_product_images = {
+            f"other_product_image_locator_{i+1}": [{
+                "media_location": [
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
+                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115"
+                ][i % 3],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }] for i in range(5)
+        }
+
+        attributes = {
+            "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
             "brand": [{"value": "NOFO VIBES"}],
             "item_type_keyword": [{"value": "infant-and-toddler-bodysuits"}],
             "product_description": [{"value": DESCRIPTION}],
@@ -268,49 +274,57 @@ def generate_amazon_json_feed(title, image_url):
             "material": [{"value": "Cotton"}],
             "department": [{"value": "Baby Girls"}],
             "variation_theme": [{"name": "SIZE/COLOR"}],
-            "parentage_level": [{"value": "parent"}],
+            "parentage_level": [{"value": "child"}],
+            "child_parent_sku_relationship": [{
+                "child_relationship_type": "variation",
+                "parent_sku": parent_sku
+            }],
+            "size": [{"value": variation}],
+            "style": [{"value": sleeve_type}],
             "model_number": [{"value": "NBV"}],
-            "model_name": [{"value": title + " Long Sleeve"}],
-            "import_designation": [{"value": "Imported"}],
+            "model_name": [{"value": "Crew Neck Bodysuit"}],
+            "import_designation": [{"value": "Made in USA"}],
             "country_of_origin": [{"value": "US"}],
             "condition_type": [{"value": "new_new"}],
             "batteries_required": [{"value": False}],
             "fabric_type": [{"value": "100% cotton"}],
             "supplier_declared_dg_hz_regulation": [{"value": "not_applicable"}],
-            "supplier_declared_has_product_identifier_exemption": [{"value": True}]
+            "supplier_declared_has_product_identifier_exemption": [{"value": True}],
+            "care_instructions": [{"value": "Machine Wash"}],
+            "sleeve": [{"value": sleeve_type}],
+            "color": [{"value": "multi"}],
+            "list_price": [{"currency": "USD", "value": price_map[variation]}],
+            "item_package_dimensions": [{
+                "length": {"value": 3, "unit": "inches"},
+                "width": {"value": 3, "unit": "inches"},
+                "height": {"value": 1, "unit": "inches"}
+            }],
+            "item_package_weight": [{"value": 0.19, "unit": "kilograms"}],
+            "main_product_image_locator": [{
+                "media_location": image_url,
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            **other_product_images,
+            "purchasable_offer": [{
+                "currency": "USD",
+                "our_price": [{"schedule": [{"value_with_tax": price_map[variation]}]}],
+                "marketplace_id": "ATVPDKIKX0DER"
+            }],
+            "fulfillment_availability": [{
+                "quantity": 999,
+                "fulfillment_channel_code": "DEFAULT",
+                "marketplace_id": "ATVPDKIKX0DER"
+            }]
         }
-    })
-
-    # Children under short-sleeve parent
-    msg_id = 3
-    for (size_label, color_label, price_value) in SHORT_SLEEVE_VARIATIONS:
-        sku = format_variation_sku(slug, size_label, color_label)
-        attrs = build_child_attributes(short_parent_sku, size_label, color_label, price_value)
 
         messages.append({
-            "messageId": msg_id,
+            "messageId": idx,
             "sku": sku,
             "operationType": "UPDATE",
             "productType": "LEOTARD",
             "requirements": "LISTING",
-            "attributes": attrs
+            "attributes": attributes
         })
-        msg_id += 1
-
-    # Children under long-sleeve parent
-    for (size_label, color_label, price_value) in LONG_SLEEVE_VARIATIONS:
-        sku = format_variation_sku(slug, size_label, color_label)
-        attrs = build_child_attributes(long_parent_sku, size_label, color_label, price_value)
-
-        messages.append({
-            "messageId": msg_id,
-            "sku": sku,
-            "operationType": "UPDATE",
-            "productType": "LEOTARD",
-            "requirements": "LISTING",
-            "attributes": attrs
-        })
-        msg_id += 1
 
     return json.dumps({
         "header": {
@@ -448,6 +462,7 @@ if uploaded_files:
             st.info("Generating Amazon Feed...")
             token = get_amazon_access_token()
             json_feed = generate_amazon_json_feed(file_stem, image_url)
+            # st.code(json.dumps(json.loads(json_feed), indent=2), language='json')
 
             st.info("Submitting Feed to Amazon...")
             feed_id = submit_amazon_json_feed(json_feed, token)
