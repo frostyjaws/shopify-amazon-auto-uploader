@@ -97,7 +97,7 @@ def generate_amazon_json_feed(title, image_url):
         "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
     ]
 
-    # PATCH 1: force size label to keep full text for the SKUs Amazon keeps shortening
+    # Keep Amazon from collapsing some sizes down to just "0-3 Months" / "3-6 Months"
     def patched_size_value(v):
         if v in [
             "Newborn White Short Sleeve",
@@ -106,18 +106,6 @@ def generate_amazon_json_feed(title, image_url):
         ]:
             return v
         return v
-
-    # PATCH 2: force color to be specific for those collapsing SKUs
-    # so Amazon doesn't treat them as the "default 0-3M" / "default 3-6M"
-    def patched_color_value(v):
-        if v in [
-            "0-3M White Short Sleeve",
-            "3-6M White Short Sleeve",
-            "Newborn White Short Sleeve"
-        ]:
-            return "White Short Sleeve"
-        # leave everyone else the way you already had them
-        return "multi"
 
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
@@ -209,7 +197,6 @@ def generate_amazon_json_feed(title, image_url):
         color_map, sleeve_type = extract_color_and_sleeve(variation)
 
         size_value = patched_size_value(variation)
-        color_value = patched_color_value(variation)
 
         other_product_images = {
             f"other_product_image_locator_{i+1}": [{
@@ -252,8 +239,8 @@ def generate_amazon_json_feed(title, image_url):
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
 
-            # this is now dynamic instead of always "multi"
-            "color": [{"value": color_value}],
+            # FORCE ALL VARIANTS TO STAY IN SAME COLOR FAMILY
+            "color": [{"value": "multi"}],
 
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
