@@ -97,15 +97,27 @@ def generate_amazon_json_feed(title, image_url):
         "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
     ]
 
-    # >>> PATCH START (only change we are adding) <<<
+    # PATCH 1: force size label to keep full text for the SKUs Amazon keeps shortening
     def patched_size_value(v):
-        # only fix the 2 problem variations, leave the rest alone
-        if v == "Newborn White Short Sleeve":
-            return "Newborn White Short Sleeve"
-        if v == "0-3M White Short Sleeve":
-            return "0-3M White Short Sleeve"
+        if v in [
+            "Newborn White Short Sleeve",
+            "0-3M White Short Sleeve",
+            "3-6M White Short Sleeve"
+        ]:
+            return v
         return v
-    # >>> PATCH END <<<
+
+    # PATCH 2: force color to be specific for those collapsing SKUs
+    # so Amazon doesn't treat them as the "default 0-3M" / "default 3-6M"
+    def patched_color_value(v):
+        if v in [
+            "0-3M White Short Sleeve",
+            "3-6M White Short Sleeve",
+            "Newborn White Short Sleeve"
+        ]:
+            return "White Short Sleeve"
+        # leave everyone else the way you already had them
+        return "multi"
 
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
@@ -196,9 +208,8 @@ def generate_amazon_json_feed(title, image_url):
         sku = format_variation_sku(slug, variation)
         color_map, sleeve_type = extract_color_and_sleeve(variation)
 
-        # >>> PATCH APPLY HERE <<<
         size_value = patched_size_value(variation)
-        # >>> END PATCH <<<
+        color_value = patched_color_value(variation)
 
         other_product_images = {
             f"other_product_image_locator_{i+1}": [{
@@ -227,7 +238,6 @@ def generate_amazon_json_feed(title, image_url):
                 "child_relationship_type": "variation",
                 "parent_sku": parent_sku
             }],
-            # THIS IS THE ONLY FIELD WE MODIFIED
             "size": [{"value": size_value}],
             "style": [{"value": sleeve_type}],
             "model_number": [{"value": "NBV"}],
@@ -241,7 +251,10 @@ def generate_amazon_json_feed(title, image_url):
             "supplier_declared_has_product_identifier_exemption": [{"value": True}],
             "care_instructions": [{"value": "Machine Wash"}],
             "sleeve": [{"value": sleeve_type}],
-            "color": [{"value": "multi"}],
+
+            # this is now dynamic instead of always "multi"
+            "color": [{"value": color_value}],
+
             "list_price": [{"currency": "USD", "value": price_map[variation]}],
             "item_package_dimensions": [{
                 "length": {"value": 3, "unit": "inches"},
