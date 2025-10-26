@@ -97,14 +97,14 @@ def generate_amazon_json_feed(title, image_url):
         "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
     ]
 
-    # Keep Amazon from collapsing some sizes down to just "0-3 Months" / "3-6 Months"
+    # PATCHED: give certain SKUs a longer size label so Amazon won't collapse them
     def patched_size_value(v):
-        if v in [
-            "Newborn White Short Sleeve",
-            "0-3M White Short Sleeve",
-            "3-6M White Short Sleeve"
-        ]:
-            return v
+        if v == "Newborn White Short Sleeve":
+            return "Newborn White Short Sleeve Bodysuit"
+        if v == "0-3M White Short Sleeve":
+            return "0-3M White Short Sleeve Bodysuit"
+        if v == "3-6M White Short Sleeve":
+            return "3-6M White Short Sleeve Bodysuit"
         return v
 
     def format_slug(title):
