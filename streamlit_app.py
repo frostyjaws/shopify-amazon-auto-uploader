@@ -97,17 +97,16 @@ def generate_amazon_json_feed(title, image_url):
         "18M Natural Short Sleeve", "24M White Short Sleeve", "24M White Long Sleeve", "24M Natural Short Sleeve"
     ]
 
+    # PATCHED: keep clean text in dropdown (no "Bodysuit"),
+    # but sneak in narrow no-break spaces so Amazon treats them as unique
     def patched_size_value(v):
-    # Preserve clean dropdown text (no 'Bodysuit')
-    # but prevent Amazon auto-collapsing by using zero-width spaces internally.
-    if v == "Newborn White Short Sleeve":
-        return "Newborn White Short Sleeve"  # includes invisible U+202F spaces
-    if v == "0-3M White Short Sleeve":
-        return "0-3M White Short Sleeve"
-    if v == "3-6M White Short Sleeve":
-        return "3-6M White Short Sleeve"
-    return v
-
+        if v == "Newborn White Short Sleeve":
+            return "Newborn\u202fWhite\u202fShort\u202fSleeve"
+        if v == "0-3M White Short Sleeve":
+            return "0-3M\u202fWhite\u202fShort\u202fSleeve"
+        if v == "3-6M White Short Sleeve":
+            return "3-6M\u202fWhite\u202fShort\u202fSleeve"
+        return v
 
     def format_slug(title):
         slug = ''.join([w[0] for w in title.split() if w]).upper()[:3]
