@@ -200,15 +200,21 @@ def generate_amazon_json_feed(title, image_url):
         size_value = patched_size_value(variation)
 
         other_product_images = {
-            f"other_product_image_locator_{i+1}": [{
-                "media_location": [
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/ca9082d9-c0ef-4dbc-a8a8-0de85b9610c0-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/26363115-65e5-4936-b422-aca4c5535ae1-copy.jpg?v=1744051115",
-                    "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a050c7dc-d0d5-4798-acdd-64b5da3cc70c-copy.jpg?v=1744051115"
-                ][i % 3],
-                "marketplace_id": "ATVPDKIKX0DER"
-            }] for i in range(5)
-        }
+    f"other_product_image_locator_{i+1}": [{
+        "media_location": [
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/759696b2-5eef-417a-9858-e6147a7c982d-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/abc15ef0-eecb-4365-968e-5811eea7ad5a-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/a6d238b2-cba8-44fa-adb3-3c1689455b5d-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/c35717f8-6098-43e0-b9d0-109bbbcdd04d-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/264d92ac-8e41-4a14-9444-6bae6ec9e699-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/364dd46d-3041-463d-825f-8cc1aa70cc58-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/bf4d9916-c242-4f6e-87a9-718110f25a8e-copy.jpg?v=1760026496",
+            "https://cdn.shopify.com/s/files/1/0545/2018/5017/files/c38c1bed-6427-40f5-b55b-e933c05ba308-copy.png?v=1760026496"
+        ][i % 8],
+        "marketplace_id": "ATVPDKIKX0DER"
+    }] for i in range(8)
+}
+
 
         attributes = {
             "item_name": [{"value": f"{title} - Baby Boy Girl Clothes Bodysuit Funny Cute"}],
